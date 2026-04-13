@@ -23,6 +23,7 @@
     "vite": "^6"
   },
   "dependencies": {
-    "mermaid": "^11.14.0"
+    "mermaid": "^11.14.0",
+    "ogl": "^1.0.11"
   }
 }

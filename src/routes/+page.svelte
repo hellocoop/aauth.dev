@@ -221,8 +221,8 @@ ${participants}
 	].sort((a, b) => b.date.localeCompare(a.date));
 
 	const authorAvatars = {
-		'Christian Posta': 'https://nordicapis.com/wp-content/uploads/Christian-Posta.jpeg',
-		'Karl McGuinness': 'https://karlmcguinness.com/img/profile.png'
+		'Christian Posta': '/authors/christian-posta.jpg',
+		'Karl McGuinness': '/authors/karl-mcguinness.png'
 	};
 </script>
 

@@ -111,14 +111,14 @@ html {
 }
 
 @keyframes log-flow {
-	0%, 4% { opacity: 0; transform: translateY(6px); }
-	10%, 78% { opacity: 1; transform: translateY(0); }
-	86%, 100% { opacity: 0; transform: translateY(-6px); }
+	0%, 2% { opacity: 0; transform: translateY(6px); }
+	6%, 88% { opacity: 1; transform: translateY(0); }
+	93%, 100% { opacity: 0; transform: translateY(-6px); }
 }
 
 .log-line {
 	opacity: 0;
-	animation: log-flow 5s ease-out infinite;
+	animation: log-flow 9s ease-out infinite;
 }
 
 .log-line:nth-of-type(1) { animation-delay: 0s; }
