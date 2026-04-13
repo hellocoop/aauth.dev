@@ -20,6 +20,7 @@
 			AAuth
 		</a>
 		<div class="flex items-center gap-6 text-sm">
+			<a href="#compare" class="text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Why AAuth</a>
 			<a href="#how-it-works" class="text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">How It Works</a>
 			<a href="#specs" class="text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Specs</a>
 			<a href="#get-started" class="text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Get Started</a>

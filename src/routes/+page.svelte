@@ -243,7 +243,7 @@ ${participants}
 				href="https://playground.aauth.dev"
 				class="font-display inline-flex items-center gap-2 px-7 py-3.5 rounded-lg bg-[var(--color-accent)] text-black font-medium no-underline hover:scale-[1.02]"
 			>
-				<span class="font-mono text-sm">&#9654;</span> Try the Playground
+				<span class="font-mono text-sm">&gt;</span> Try the Playground
 			</a>
 			<a
 				href="#get-started"
@@ -306,6 +306,50 @@ ${participants}
 				</InView>
 			{/each}
 		</div>
+	</div>
+</section>
+
+<!-- Compare -->
+<section id="compare" class="py-24 px-6">
+	<div class="max-w-5xl mx-auto">
+		<InView>
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Why Not OAuth or API Keys?</h2>
+			<p class="text-center text-[var(--color-text-muted)] max-w-3xl mx-auto mb-12 text-lg">
+				The two credentials agents inherit today were designed for a different shape of client.
+			</p>
+		</InView>
+
+		<InView>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+				<div class="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]">
+					<h3 class="font-semibold mb-4">API Keys</h3>
+					<dl class="space-y-3 text-sm">
+						<div><dt class="text-[var(--color-text-dim)]">Registration</dt><dd>Per service</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">Credential</dt><dd>Shared secret</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">Presentation</dt><dd>Bearer</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">User delegation</dt><dd>None</dd></div>
+					</dl>
+				</div>
+				<div class="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]">
+					<h3 class="font-semibold mb-4">OAuth 2.0 / OIDC</h3>
+					<dl class="space-y-3 text-sm">
+						<div><dt class="text-[var(--color-text-dim)]">Registration</dt><dd>Per authorization server</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">Credential</dt><dd>Client secret + bearer token</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">Presentation</dt><dd>Bearer (DPoP optional)</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">User delegation</dt><dd>Through the AS</dd></div>
+					</dl>
+				</div>
+				<div class="border-flow p-6 rounded-xl border border-transparent bg-[var(--color-bg-card)]">
+					<h3 class="font-semibold mb-4 text-[var(--color-accent)]">AAuth</h3>
+					<dl class="space-y-3 text-sm">
+						<div><dt class="text-[var(--color-text-dim)]">Registration</dt><dd>None — self-published</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">Credential</dt><dd>Agent's own signing key</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">Presentation</dt><dd>HTTP Message Signature</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">User delegation</dt><dd>Per-request via PS / AS</dd></div>
+					</dl>
+				</div>
+			</div>
+		</InView>
 	</div>
 </section>
 
@@ -414,7 +458,7 @@ ${participants}
 </section>
 
 <!-- Specifications -->
-<section id="specs" class="py-24 px-6 hidden">
+<section id="specs" class="py-24 px-6">
 	<div class="max-w-4xl mx-auto">
 		<InView>
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Specifications</h2>
