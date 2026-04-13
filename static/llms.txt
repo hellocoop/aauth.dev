@@ -1,0 +1,36 @@
+# AAuth
+
+> AAuth is an authorization protocol for agent-to-resource authorization and identity claim retrieval, supporting four resource access modes with agent governance as an orthogonal layer.
+
+## What is AAuth?
+
+Every agent — any HTTP client — gets its own cryptographic identity: a domain, static metadata, and a JWKS. No pre-registration, no shared secrets, no dependency on a particular server. An agent signs a request and a resource decides what to do based on who the agent is.
+
+AAuth supports four resource access modes (identity-based, resource-managed, PS-managed, federated), each adding parties and capabilities. Adoption does not require coordination between parties.
+
+## Specifications
+
+- [AAuth Protocol (Internet-Draft)](https://datatracker.ietf.org/doc/draft-hardt-aauth-protocol): The authorization protocol. Four access modes, three token types, agent governance with missions, clarification chat, and call chaining.
+- [HTTP Signature Keys (Internet-Draft)](https://datatracker.ietf.org/doc/draft-hardt-httpbis-signature-key/): Foundation layer. Well-known key discovery, Signature-Key header for conveying public keying material alongside HTTP Message Signatures (RFC 9421).
+- [R3 — Rich Resource Requests (Exploratory)](https://dickhardt.github.io/AAuth/draft-hardt-aauth-r3.html): Vocabulary-based authorization using formats agents already understand (MCP, OpenAPI, gRPC, GraphQL).
+
+## Implementations
+
+- [TypeScript Reference Implementation](https://github.com/hellocoop/AAuth): Node.js / TypeScript
+- [Python Demo](https://github.com/christian-posta/aauth-full-demo): Full demo with Keycloak & Agentgateway
+- [Java Keycloak Extension](https://github.com/christian-posta/keycloak-aauth-extension): Keycloak AAuth extension
+
+## Getting Started
+
+- [Playground](https://playground.aauth.dev): Interactive browser-based AAuth playground
+
+## Articles
+
+- [Deep Dive AAuth — Identity and Access Management for AI Agents](https://blog.christianposta.com/exploring-aauth-agent-auth-identity-and-access-management-for-ai-agents/): Comprehensive overview by Christian Posta
+- [AAuth Full Demo](https://blog.christianposta.com/aauth-full-demo/): Working demo with Keycloak, Agentgateway, Java/Python/Rust
+- [Do AI Agents Need Their Own Identity?](https://blog.christianposta.com/do-we-even-need-agent-identity/): The case for independent agent identity
+
+## Source
+
+- [Specification Source (GitHub)](https://github.com/dickhardt/AAuth)
+- [Website Source (GitHub)](https://github.com/hellocoop/aauth.dev)

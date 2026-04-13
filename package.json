@@ -1,30 +1,25 @@
 {
-  "name": "aauth.ai",
-  "version": "1.0.0",
-  "description": "AAuth.ai - Authentication & Authorization for Autonomous Agents",
+  "name": "aauth.dev",
+  "version": "2.0.0",
+  "description": "AAuth — Authentication & Authorization for Agents",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hellocoop/aauth.ai.git"
+    "url": "git+https://github.com/hellocoop/aauth.dev.git"
   },
-  "homepage": "https://www.aauth.ai/",
-  "dependencies": {
-    "next": "^16.2.2",
-    "nextra": "^4.6.0",
-    "nextra-theme-docs": "^4.6.0",
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
-  },
+  "homepage": "https://www.aauth.dev/",
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "25.5.0",
-    "@types/react": "19.2.14",
-    "postcss": "^8.4.31",
+    "@sveltejs/adapter-static": "^3",
+    "@sveltejs/kit": "^2",
+    "@sveltejs/vite-plugin-svelte": "^5",
+    "@tailwindcss/vite": "^4",
+    "svelte": "^5",
     "tailwindcss": "^4",
-    "typescript": "^5.0.0"
+    "vite": "^6"
   }
 }

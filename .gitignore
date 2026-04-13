@@ -1,4 +1,7 @@
 node_modules/
+build/
+.svelte-kit/
+.wrangler/
 out/
 .next/
 .DS_Store
