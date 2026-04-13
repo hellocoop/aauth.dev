@@ -89,13 +89,13 @@
 			desc: 'Resource issues a resource token. PS issues an auth token carrying user identity and scope.',
 			diagram: `Agent            Resource       PS
   │                 │            │
-  │  HTTPSig        │            │
+  │  HTTPSig w/ agent token      │
   │────────────────>│            │
   │                 │            │
   │  resource_token │            │
   │<────────────────│            │
   │                 │            │
-  │  resource_token              │
+  │  resource_token + HTTPSig    │
   │─────────────────────────────>│
   │                              │
   │  auth_token                  │
@@ -113,13 +113,13 @@
 			desc: 'Resource has its own Access Server. PS federates with AS to obtain the auth token across trust domains.',
 			diagram: `Agent        Resource   PS          AS
   │              │       │           │
-  │  HTTPSig     │       │           │
+  │  HTTPSig w/ agent token          │
   │─────────────>│       │           │
   │              │       │           │
   │  resource_token      │           │
   │<─────────────│       │           │
   │              │       │           │
-  │  resource_token      │           │
+  │  resource_token + HTTPSig        │
   │─────────────────────>│           │
   │              │       │           │
   │              │       │  federate │
