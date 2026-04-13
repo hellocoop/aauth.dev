@@ -20,8 +20,8 @@
 	--color-as: #fb923c;
 	--color-person: #e4e4ed;
 
-	--color-accent: #00e5ff;
-	--color-accent-hover: #00b3cc;
+	--color-accent: #4ade80;
+	--color-accent-hover: #22c55e;
 }
 
 * {
@@ -97,6 +97,44 @@ html {
 @keyframes glow-rotate {
 	to {
 		--glow-angle: 360deg;
+	}
+}
+
+@keyframes spec-reveal {
+	from { opacity: 0; transform: translateY(16px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+.spec-reveal {
+	opacity: 0;
+	animation: spec-reveal 500ms ease-out var(--reveal-delay, 0ms) forwards;
+}
+
+@keyframes log-flow {
+	0%, 4% { opacity: 0; transform: translateY(6px); }
+	10%, 78% { opacity: 1; transform: translateY(0); }
+	86%, 100% { opacity: 0; transform: translateY(-6px); }
+}
+
+.log-line {
+	opacity: 0;
+	animation: log-flow 5s ease-out infinite;
+}
+
+.log-line:nth-of-type(1) { animation-delay: 0s; }
+.log-line:nth-of-type(2) { animation-delay: 0.3s; }
+.log-line:nth-of-type(3) { animation-delay: 0.6s; }
+.log-line:nth-of-type(4) { animation-delay: 0.9s; }
+
+.mermaid-scroll svg {
+	max-width: none !important;
+	width: auto !important;
+	height: auto !important;
+}
+@media (min-width: 768px) {
+	.mermaid-scroll svg {
+		width: 100% !important;
+		max-width: 100% !important;
 	}
 }
 

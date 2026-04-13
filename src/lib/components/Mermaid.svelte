@@ -3,23 +3,32 @@
 	let container = $state();
 	let svg = $state('');
 
+	function countSignals(src) {
+		return src
+			.split('\n')
+			.filter((ln) => /->>|-->>|Note /.test(ln)).length;
+	}
+
 	$effect(() => {
 		if (!chart) return;
 		let cancelled = false;
 		(async () => {
 			const { default: mermaid } = await import('mermaid');
+			const signals = Math.max(countSignals(chart), 1);
+			const targetContentH = 350;
+			const messageMargin = Math.round(targetContentH / signals);
 			mermaid.initialize({
 				startOnLoad: false,
 				theme: 'base',
 				fontFamily: 'JetBrains Mono, monospace',
 				sequence: {
 					useMaxWidth: true,
-					actorMargin: 180,
-					messageMargin: 45,
-					boxMargin: 12,
-					noteMargin: 12,
+					actorMargin: 120,
+					messageMargin,
+					boxMargin: 8,
+					noteMargin: 8,
 					mirrorActors: false,
-					wrap: true
+					wrap: false
 				},
 				themeVariables: {
 					background: '#1a1a25',
@@ -58,8 +67,27 @@
 		})();
 		return () => { cancelled = true; };
 	});
+
+	$effect(() => {
+		svg;
+		if (!container) return;
+		queueMicrotask(() => {
+			const svgEl = container.querySelector('svg');
+			if (!svgEl) return;
+			svgEl.style.maxWidth = '';
+			const vb = svgEl.viewBox?.baseVal;
+			if (!vb) return;
+			const targetH = 520;
+			const actorLines = svgEl.querySelectorAll('line.actor-line, .actor-line');
+			actorLines.forEach((line) => {
+				line.setAttribute('y2', String(targetH));
+			});
+			svgEl.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${targetH}`);
+			svgEl.setAttribute('height', String(targetH));
+		});
+	});
 </script>
 
-<div bind:this={container} class="w-full [&_svg]:w-full [&_svg]:h-auto">
+<div bind:this={container} class="mermaid-scroll w-full">
 	{@html svg}
 </div>

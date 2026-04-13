@@ -2,6 +2,12 @@
 	import Nav from '$lib/components/Nav.svelte';
 	import InView from '$lib/components/InView.svelte';
 	import Mermaid from '$lib/components/Mermaid.svelte';
+	import DecryptText from '$lib/components/DecryptText.svelte';
+
+	let playgroundTrigger = $state(0);
+	let getStartedTrigger = $state(0);
+	let issueTrigger = $state(0);
+	let prTrigger = $state(0);
 
 	let layersVisible = $state(false);
 	let layersEl;
@@ -39,17 +45,17 @@
 		},
 		{
 			title: 'Tool-Call Governance',
-			desc: 'The Person Server manages what tools the agent can call, providing permission and audit for tool use.',
+			desc: 'A server representing the user decides which tools the agent may call and audits every call — no resource involved.',
 			color: 'var(--color-as)'
 		},
 		{
 			title: 'Missions',
-			desc: 'Agents propose what they intend to do. The user reviews, clarifies, and approves. Every access is in context.',
+			desc: 'The agent states what it intends to do. The user reviews, clarifies, and approves. Every access is evaluated in that context.',
 			color: 'var(--color-ps)'
 		},
 		{
 			title: 'Cross-Domain Federation',
-			desc: 'PS-to-AS federation enables access across trust domains. The agent doesn\'t need to know about each access server.',
+			desc: 'Authorization crosses trust domains seamlessly — the agent never has to know about each separate server.',
 			color: 'var(--color-agent)'
 		}
 	];
@@ -76,10 +82,10 @@ ${participants}
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token
-    R-->>A: 202 Accepted + Location
-    Note over A,R: user consents
+    R-->>A: 202 + Location
+    Note over A,R: user interacts
     A->>R: GET Location
-    R-->>A: 200 OK + AAuth-Access`
+    R-->>A: 200 + AAuth-Access`
 		},
 		{
 			name: 'PS-Managed',
@@ -103,7 +109,7 @@ ${participants}
     A->>R: HTTPSig w/ agent token
     R-->>A: 401 + resource_token
     A->>P: resource_token + HTTPSig
-    P->>S: federate
+    P->>S: POST /token
     S-->>P: auth_token
     P-->>A: auth_token
     A->>R: HTTPSig w/ auth_token
@@ -116,6 +122,7 @@ ${participants}
 	const specs = [
 		{
 			name: 'AAuth Protocol',
+			layer: 'Layer 3',
 			status: 'Internet-Draft',
 			href: 'https://datatracker.ietf.org/doc/draft-hardt-aauth-protocol',
 			editorsCopy: 'https://dickhardt.github.io/AAuth/draft-hardt-aauth-protocol.html',
@@ -124,6 +131,7 @@ ${participants}
 		},
 		{
 			name: 'AAuth Headers',
+			layer: 'Layer 2',
 			status: 'Internet-Draft',
 			href: 'https://datatracker.ietf.org/doc/draft-hardt-aauth-headers/',
 			editorsCopy: 'https://dickhardt.github.io/AAuth/draft-hardt-aauth-headers.html',
@@ -132,6 +140,7 @@ ${participants}
 		},
 		{
 			name: 'HTTP Signature Keys',
+			layer: 'Layer 1',
 			status: 'Internet-Draft',
 			href: 'https://datatracker.ietf.org/doc/draft-hardt-httpbis-signature-key/',
 			editorsCopy: 'https://dickhardt.github.io/signature-key/draft-hardt-httpbis-signature-key.html',
@@ -140,6 +149,7 @@ ${participants}
 		},
 		{
 			name: 'R3 — Rich Resource Requests',
+			layer: 'Extension',
 			status: 'Exploratory',
 			href: 'https://dickhardt.github.io/AAuth/draft-hardt-aauth-r3.html',
 			editorsCopy: null,
@@ -168,13 +178,6 @@ ${participants}
 			icon: 'keycloak',
 			desc: 'Keycloak extension adding AAuth signature verification and grants.',
 			href: 'https://github.com/christian-posta/keycloak-aauth-extension',
-			available: true
-		},
-		{
-			name: 'Rust',
-			icon: 'rust',
-			desc: 'Agentgateway routing signed agent-to-agent traffic.',
-			href: 'https://github.com/christian-posta/aauth-full-demo',
 			available: true
 		},
 	];
@@ -216,6 +219,11 @@ ${participants}
 			date: '2025-06-02'
 		}
 	].sort((a, b) => b.date.localeCompare(a.date));
+
+	const authorAvatars = {
+		'Christian Posta': 'https://nordicapis.com/wp-content/uploads/Christian-Posta.jpeg',
+		'Karl McGuinness': 'https://karlmcguinness.com/img/profile.png'
+	};
 </script>
 
 <Nav />
@@ -223,14 +231,11 @@ ${participants}
 <!-- Hero -->
 <section class="min-h-screen flex items-center justify-center px-6 pt-16">
 	<div class="max-w-4xl mx-auto text-center">
-		<h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.1]">
-			HTTP Clients Need<br />
-			<span class="text-[var(--color-accent)]">
-				Their Own Identity
-			</span>
+		<h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[1.1] uppercase">
+			HTTP Clients Need <span class="text-[var(--color-accent)]">Their Own Identity</span>
 		</h1>
 		<p class="text-xl md:text-2xl text-[var(--color-text-muted)] max-w-3xl mx-auto mb-12 leading-relaxed">
-			AAuth gives every agent its own cryptographic identity.<br />
+			AAuth gives every agent its own cryptographic identity.<br class="hidden sm:inline" />
 			No pre-registration. No shared secrets. No bearer tokens.
 		</p>
 		<!-- <p class="text-lg text-[var(--color-text-dim)] max-w-2xl mx-auto mb-12 leading-relaxed">
@@ -241,15 +246,18 @@ ${participants}
 		<div class="flex justify-center gap-4 flex-wrap mb-16">
 			<a
 				href="https://playground.aauth.dev"
-				class="font-display inline-flex items-center gap-2 px-7 py-3.5 rounded-lg bg-[var(--color-accent)] text-black font-medium no-underline hover:scale-[1.02]"
+				onmouseenter={() => playgroundTrigger++}
+				class="font-display inline-flex items-center justify-center gap-2 px-7 py-3.5 w-full sm:w-auto rounded-lg bg-[var(--color-accent)] text-black font-medium no-underline"
 			>
-				<span class="font-mono text-sm">&gt;</span> Try the Playground
+				<span class="font-mono text-sm">&gt;</span>
+				<DecryptText text="Try the Playground" trigger={playgroundTrigger} />
 			</a>
 			<a
 				href="#get-started"
-				class="font-display inline-flex items-center gap-2 px-7 py-3.5 rounded-lg border border-[var(--color-accent)] text-[var(--color-accent)] font-medium no-underline hover:scale-[1.02]"
+				onmouseenter={() => getStartedTrigger++}
+				class="font-display inline-flex items-center justify-center gap-2 px-7 py-3.5 w-full sm:w-auto rounded-lg border border-[var(--color-accent)] text-[var(--color-accent)] font-medium no-underline"
 			>
-				See Implementations
+				<DecryptText text="Get Started" trigger={getStartedTrigger} />
 			</a>
 		</div>
 
@@ -263,12 +271,12 @@ ${participants}
 </section>
 
 <!-- Agents Are Different -->
-<section id="compare" class="py-24 px-6">
+<section id="compare" class="py-14 md:py-24 px-6">
 	<div class="max-w-6xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Agents Are Different</h2>
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Agents Are Different</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-4xl mx-auto mb-16 text-lg">
-				Agents discover resources at runtime and need authorization mid-task.<br />
+				Agents discover resources at runtime and need authorization mid-task.<br class="hidden sm:inline" />
 				Protocols built for pre-registered clients with fixed integrations can't keep up.
 			</p>
 		</InView>
@@ -310,12 +318,12 @@ ${participants}
 </section>
 
 <!-- Compare -->
-<section class="py-24 px-6">
+<section class="py-14 md:py-24 px-6">
 	<div class="max-w-5xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Why Not OAuth or API Keys?</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-3xl mx-auto mb-12 text-lg">
-				The two credentials agents inherit today were designed for a different shape of client.
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Why Not OAuth or API Keys?</h2>
+			<p class="text-center text-[var(--color-text-muted)] max-w-4xl mx-auto mb-12 text-lg">
+				The two credential models agents inherit today were designed for a different shape of client.
 			</p>
 		</InView>
 
@@ -334,7 +342,7 @@ ${participants}
 					<h3 class="font-semibold mb-4">OAuth 2.0 / OIDC</h3>
 					<dl class="space-y-3 text-sm">
 						<div><dt class="text-[var(--color-text-dim)]">Registration</dt><dd>Per authorization server</dd></div>
-						<div><dt class="text-[var(--color-text-dim)]">Credential</dt><dd>Client secret + bearer token</dd></div>
+						<div><dt class="text-[var(--color-text-dim)]">Credential</dt><dd>Client secret or PKCE + bearer token</dd></div>
 						<div><dt class="text-[var(--color-text-dim)]">Presentation</dt><dd>Bearer (DPoP optional)</dd></div>
 						<div><dt class="text-[var(--color-text-dim)]">User delegation</dt><dd>Through the AS</dd></div>
 					</dl>
@@ -349,47 +357,49 @@ ${participants}
 					</dl>
 				</div>
 			</div>
+			<p class="text-xs text-center text-[var(--color-text-dim)] mt-4 font-mono">
+				PS = Person Server &middot; AS = Access Server
+			</p>
 		</InView>
 	</div>
 </section>
 
 <!-- How AAuth Works -->
-<section id="how-it-works" class="py-24 px-6">
+<section id="how-it-works" class="py-14 md:py-24 px-6">
 	<div class="max-w-6xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">How AAuth Works</h2>
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">How AAuth Works</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-4 text-lg">
-				Four access modes. Each adds parties and capabilities.<br />
+				Four access modes. Each adds parties and capabilities.<br class="hidden sm:inline" />
 				Adoption does not require coordination between parties.
 			</p>
 		</InView>
 
 		<InView>
-			<div class="flex justify-center gap-2 flex-wrap mb-8 mt-12">
-				{#each modes as mode, i}
-					<button
-						onclick={() => (activeMode = i)}
-						class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer border
-							{activeMode === i
-							? 'bg-[var(--color-accent)] text-black border-transparent'
-							: 'bg-[var(--color-bg-card)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-border-hover)]'}"
-					>
-						{mode.name}
-					</button>
-				{/each}
+			<div class="flex items-center justify-center gap-3 flex-wrap mt-10 mb-4">
+				<span class="text-xs font-mono text-[var(--color-text-dim)] hidden sm:inline">simplest &rarr;</span>
+				<div class="flex justify-center gap-2 flex-wrap">
+					{#each modes as mode, i}
+						<button
+							onclick={() => (activeMode = i)}
+							class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer border
+								{activeMode === i
+								? 'bg-[var(--color-accent)] text-black border-transparent'
+								: 'bg-[var(--color-bg-card)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-border-hover)]'}"
+						>
+							{mode.name}
+						</button>
+					{/each}
+				</div>
+				<span class="text-xs font-mono text-[var(--color-text-dim)] hidden sm:inline">&rarr; most capable</span>
 			</div>
+
 
 			<div class="max-w-4xl mx-auto">
 				<div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] overflow-hidden">
-					<div class="px-6 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
-						<div>
-							<span class="text-sm font-medium">{modes[activeMode].name} Access</span>
-							<span class="text-xs text-[var(--color-text-dim)] ml-3">{modes[activeMode].parties}</span>
-						</div>
-					</div>
 					<div class="p-6">
 						<p class="text-[var(--color-text-muted)] mb-6">{modes[activeMode].desc}</p>
-						<div class="bg-[var(--color-bg-code)] rounded-lg p-5 overflow-x-auto min-h-[520px] flex items-start">
+						<div class="bg-[var(--color-bg-code)] rounded-lg p-5 h-[420px] flex items-start overflow-x-auto md:overflow-hidden">
 						{#key activeMode}
 							<Mermaid chart={modes[activeMode].diagram} />
 						{/key}
@@ -397,31 +407,33 @@ ${participants}
 					</div>
 				</div>
 			</div>
+			<div class="mt-4 text-xs text-center text-[var(--color-text-dim)] space-y-1 font-mono">
+				<p>
+					<span class="text-[var(--color-text-muted)]">agent_token</span> identifies the agent &middot;
+					<span class="text-[var(--color-text-muted)]">resource_token</span> is the resource's challenge &middot;
+					<span class="text-[var(--color-text-muted)]">auth_token</span> grants access
+				</p>
+				<p>PS = Person Server &middot; AS = Access Server</p>
+			</div>
 		</InView>
 	</div>
 </section>
 
 <!-- The 202 Pattern -->
-<section class="py-24 px-6">
+<section class="py-14 md:py-24 px-6">
 	<div class="max-w-4xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">One Pattern for Everything</h2>
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">One Pattern for Everything</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
-				<code class="font-mono text-[var(--color-agent)] bg-[var(--color-bg-code)] px-2 py-1 rounded">202 Accepted</code>
-				+ polling handles immediate grants, user consent, headless agents, enterprise approval, and clarification chat.
+				<code class="font-mono text-[var(--color-resource)] bg-[var(--color-bg-code)] px-2 py-1 rounded">202 Accepted</code>
+				+ polling handles user consent, enterprise approval, headless agents, and clarification chat — everything that isn't immediate.
 			</p>
 		</InView>
 
 		<InView>
 			<div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] overflow-hidden">
-				<div class="px-5 py-3 border-b border-[var(--color-border)] flex items-center gap-2">
-					<div class="w-3 h-3 rounded-full bg-red-500/50"></div>
-					<div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-					<div class="w-3 h-3 rounded-full bg-green-500/50"></div>
-					<span class="text-xs text-[var(--color-text-dim)] ml-2 font-mono">aauth-flow.http</span>
-				</div>
 				<div class="p-6 font-mono text-sm leading-loose">
-					<div class="mb-4">
+					<div class="log-line mb-4">
 						<span class="text-[var(--color-agent)]">POST</span>
 						<span class="text-[var(--color-text-muted)]"> /api/resource </span>
 						<span class="text-[var(--color-text-dim)]">HTTP/1.1</span>
@@ -431,22 +443,27 @@ ${participants}
 						<span class="text-[var(--color-text-dim)]">Signature: sig1=:base64...:</span>
 					</div>
 
-					<div class="mb-4 pl-4 border-l-2 border-[var(--color-resource)]">
+					<div class="log-line mb-4 pl-4 border-l-2 border-[var(--color-resource)]">
 						<span class="text-[var(--color-resource)]">&larr; 202 Accepted</span>
 						<br />
-						<span class="text-[var(--color-text-dim)]">Location: /pending/abc123</span>
+						<span class="text-[var(--color-text-dim)]">Location: https://resource.example/pending/abc123</span>
 						<br />
 						<span class="text-[var(--color-text-dim)]">AAuth-Requirement: requirement=interaction;</span>
 						<br />
 						<span class="text-[var(--color-text-dim)]">  url="https://resource.example/consent/abc"; code="ABCD1234"</span>
 					</div>
 
-					<div class="mb-4">
+					<div class="log-line mb-4">
 						<span class="text-[var(--color-agent)]">GET</span>
-						<span class="text-[var(--color-text-muted)]"> /pending/abc123</span>
+						<span class="text-[var(--color-text-muted)]"> /pending/abc123 </span>
+						<span class="text-[var(--color-text-dim)]">HTTP/1.1</span>
+						<br />
+						<span class="text-[var(--color-text-dim)]">Signature-Key: sig=jwt; jwt="eyJ...agent-token"</span>
+						<br />
+						<span class="text-[var(--color-text-dim)]">Signature: sig1=:base64...:</span>
 					</div>
 
-					<div class="pl-4 border-l-2 border-[var(--color-resource)]">
+					<div class="log-line pl-4 border-l-2 border-[var(--color-resource)]">
 						<span class="text-[var(--color-resource)]">&larr; 200 OK</span>
 						<br />
 						<span class="text-[var(--color-text-dim)]">AAuth-Access: opaque-access-token</span>
@@ -458,26 +475,50 @@ ${participants}
 </section>
 
 <!-- Specifications -->
-<section id="specs" class="py-24 px-6">
+<section id="specs" class="py-14 md:py-24 px-6">
 	<div class="max-w-4xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Specifications</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
-				AAuth is defined as IETF Internet-Drafts.
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Specifications</h2>
+			<p class="text-center text-[var(--color-text-muted)] max-w-3xl mx-auto mb-12 text-lg">
+				Three drafts stack: <span class="text-[var(--color-text)]">Protocol</span> defines tokens, access modes, and federation; <span class="text-[var(--color-text)]">Headers</span> profiles the signature headers it uses; <span class="text-[var(--color-text)]">Signature Keys</span> underpins both with the key-conveyance header. R3 is an optional extension.
 			</p>
 		</InView>
 
-		<div bind:this={layersEl} class="space-y-4 max-w-3xl mx-auto">
+		<div
+			bind:this={layersEl}
+			class="space-y-4 max-w-3xl mx-auto"
+			onmousemove={(e) => {
+				const cards = e.currentTarget.querySelectorAll('.glow-card');
+				cards.forEach((card) => {
+					const r = card.getBoundingClientRect();
+					card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+					card.style.setProperty('--my', `${e.clientY - r.top}px`);
+					const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
+					const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+					card.style.setProperty('--glow-opacity', Math.hypot(dx, dy) < 120 ? '1' : '0');
+				});
+			}}
+			onmouseleave={(e) => {
+				e.currentTarget.querySelectorAll('.glow-card').forEach((c) => {
+					c.style.setProperty('--glow-opacity', '0');
+				});
+			}}
+		>
 			{#each specs as spec, i}
 				{@const delay = i * 150}
+				{#if spec.status === 'Exploratory' && i > 0 && specs[i - 1].status !== 'Exploratory'}
+					<div class="flex items-center gap-3 pt-4 pb-2 text-xs uppercase tracking-wider text-[var(--color-text-dim)] font-mono">
+						<span>Extensions</span>
+						<span class="flex-1 h-px bg-[var(--color-border)]"></span>
+					</div>
+				{/if}
 				<a
 					href={spec.href}
 					target="_blank"
 					rel="noopener"
-					class="block rounded-xl border bg-[var(--color-bg-card)] hover:border-[var(--color-border-hover)] transition-all duration-500 no-underline
-						{spec.primary ? 'border-[var(--color-accent)]/40' : 'border-[var(--color-border)]'}
-						{layersVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}"
-					style="transition-delay: {delay}ms"
+					class="glow-card block rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] transition-transform duration-200 no-underline hover:scale-[1.02]
+						{layersVisible ? 'spec-reveal' : 'opacity-0'}"
+					style="--reveal-delay: {delay}ms"
 				>
 					<div class="px-6 py-5">
 						<div class="flex items-center justify-between mb-2">
@@ -500,17 +541,17 @@ ${participants}
 </section>
 
 <!-- Get Started -->
-<section id="get-started" class="py-24 px-6">
+<section id="get-started" class="py-14 md:py-24 px-6">
 	<div class="max-w-6xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Get Started</h2>
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Get Started</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
 				Implementations and demos across platforms.
 			</p>
 		</InView>
 
 		<div
-			class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto"
+			class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
 			onmousemove={(e) => {
 				const cards = e.currentTarget.querySelectorAll('.glow-card');
 				cards.forEach((card) => {
@@ -534,7 +575,7 @@ ${participants}
 						href={platform.href}
 						target="_blank"
 						rel="noopener"
-						class="glow-card block h-full p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] no-underline hover:scale-[1.02]"
+						class="glow-card block h-full p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] no-underline transition-transform duration-200 hover:scale-[1.02]"
 					>
 						<h3 class="font-semibold mb-1 flex items-center gap-2">
 							<img
@@ -559,10 +600,10 @@ ${participants}
 </section>
 
 <!-- Deep Dives -->
-<section class="py-24 px-6">
+<section class="py-14 md:py-24 px-6">
 	<div class="max-w-4xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Deep Dives</h2>
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Deep Dives</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
 				Articles and demos from the community.
 			</p>
@@ -593,13 +634,25 @@ ${participants}
 						href={post.href}
 						target="_blank"
 						rel="noopener"
-						class="glow-card block p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] no-underline hover:scale-[1.02]"
+						class="glow-card block p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] no-underline transition-transform duration-200 hover:scale-[1.02]"
 					>
 						<div class="flex items-start justify-between gap-4 mb-1">
 							<h3 class="font-semibold">{post.title}</h3>
 							<span class="text-xs text-[var(--color-text-dim)] shrink-0 mt-1 font-mono">{post.date}</span>
 						</div>
-						<p class="text-sm text-[var(--color-text-muted)]">{post.author} — {post.desc}</p>
+						<p class="text-sm text-[var(--color-text-muted)] flex items-center gap-2">
+							{#if authorAvatars[post.author]}
+								<img
+									src={authorAvatars[post.author]}
+									alt={post.author}
+									width="20"
+									height="20"
+									class="w-5 h-5 rounded-full object-cover shrink-0"
+									loading="lazy"
+								/>
+							{/if}
+							<span>{post.author} — {post.desc}</span>
+						</p>
 					</a>
 				{/each}
 			</div>
@@ -608,32 +661,22 @@ ${participants}
 </section>
 
 <!-- Contribute -->
-<section class="py-20 px-6">
+<section class="py-12 md:py-20 px-6">
 	<div class="max-w-3xl mx-auto text-center">
 		<InView>
-			<h2 class="text-2xl md:text-3xl font-bold mb-3">Contribute</h2>
+			<h2 class="text-2xl md:text-3xl font-bold mb-3 uppercase">Contribute</h2>
 			<p class="text-[var(--color-text-muted)] mb-6">
-				Found something missing or want to help improve AAuth?
+				Spot an error on this page or want to help improve it?
 			</p>
-			<div class="flex justify-center gap-4 flex-wrap">
-				<a
-					href="https://github.com/hellocoop/aauth.dev/issues"
-					target="_blank"
-					rel="noopener"
-					class="text-sm text-[var(--color-accent)] hover:underline"
-				>
-					Open an issue
-				</a>
-				<span class="text-[var(--color-text-dim)]">&middot;</span>
-				<a
-					href="https://github.com/hellocoop/aauth.dev"
-					target="_blank"
-					rel="noopener"
-					class="text-sm text-[var(--color-accent)] hover:underline"
-				>
-					Submit a PR
-				</a>
-			</div>
+			<a
+				href="https://github.com/hellocoop/aauth.dev/edit/main/src/routes/+page.svelte"
+				target="_blank"
+				rel="noopener"
+				onmouseenter={() => issueTrigger++}
+				class="text-sm text-[var(--color-accent)] hover:underline"
+			>
+				<DecryptText text="Edit this page on GitHub ↗" trigger={issueTrigger} />
+			</a>
 		</InView>
 	</div>
 </section>
@@ -643,7 +686,7 @@ ${participants}
 	<div class="max-w-6xl mx-auto">
 		<div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
 			<div>
-				<span class="font-mono font-bold text-lg">AAuth</span>
+				<span class="font-display font-bold text-lg">AAuth</span>
 				<p class="text-sm text-[var(--color-text-muted)] mt-2 max-w-xs">
 					Agent identity, resource access, and user delegation
 					for open ecosystems.
@@ -656,14 +699,14 @@ ${participants}
 				<div class="space-y-3">
 					<h4 class="font-semibold text-[var(--color-text-dim)] uppercase tracking-wider text-xs">Protocol</h4>
 					<a href="#specs" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Specifications</a>
-					<a href="https://playground.aauth.dev" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Playground</a>
+					<a href="https://playground.aauth.dev" target="_blank" rel="noopener" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Playground</a>
 					<a href="/llms.txt" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline font-mono">llms.txt</a>
 				</div>
 				<div class="space-y-3">
 					<h4 class="font-semibold text-[var(--color-text-dim)] uppercase tracking-wider text-xs">Community</h4>
 					<a href="https://github.com/dickhardt/AAuth" target="_blank" rel="noopener" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Spec GitHub</a>
-					<a href="https://github.com/hellocoop/AAuth" target="_blank" rel="noopener" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Implementation</a>
-					<a href="https://github.com/hellocoop/aauth.dev/issues" target="_blank" rel="noopener" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Contribute</a>
+					<a href="#get-started" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Implementations</a>
+					<a href="https://github.com/hellocoop/aauth.dev/edit/main/src/routes/+page.svelte" target="_blank" rel="noopener" class="block text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">Edit this page</a>
 				</div>
 			</div>
 		</div>
