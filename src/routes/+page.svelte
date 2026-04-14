@@ -414,6 +414,16 @@ ${participants}
 								</div>
 							{/each}
 						</div>
+
+						<!-- Raw HTTP wire example for Resource-Managed (commented out for now)
+						{#if modes[activeMode].name === 'Resource-Managed'}
+							<p class="text-xs text-[var(--color-text-dim)] font-mono mt-6 mb-2">as raw HTTP:</p>
+							<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-code)] p-5 font-mono text-sm leading-loose overflow-x-auto">
+								... wire example markup ...
+							</div>
+						{/if}
+						-->
+
 					</div>
 				</div>
 			</div>
