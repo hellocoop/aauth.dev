@@ -481,7 +481,7 @@ ${participants}
 		<InView>
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Get Started</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
-				Implementations and demos across platforms.
+				Everything you need to build with AAuth.
 			</p>
 		</InView>
 
