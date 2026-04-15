@@ -53,7 +53,3 @@ We welcome contributions — new platform guides, corrections, suggestions, and 
 
 - **[dickhardt/AAuth](https://github.com/dickhardt/AAuth)** — Protocol specifications (IETF Internet-Drafts)
 - **[hellocoop/AAuth](https://github.com/hellocoop/AAuth)** — TypeScript reference implementation
-
-## License
-
-Content is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Code is licensed under [MIT](https://opensource.org/licenses/MIT).
