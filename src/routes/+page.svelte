@@ -192,13 +192,6 @@ ${participants}
 			available: true
 		},
 		{
-			name: 'Playground',
-			iconGlyph: '>',
-			desc: 'Interactive in-browser demo of signed requests and access modes.',
-			href: 'https://playground.aauth.dev',
-			available: true
-		},
-		{
 			name: 'Node.js / TypeScript',
 			icon: 'nodedotjs',
 			desc: 'Reference SDK for agents and MCP servers with signed-request auth.',
@@ -215,6 +208,13 @@ ${participants}
 	];
 
 	const deepDives = [
+		{
+			title: 'AAuth Now Has a Mission Layer',
+			author: 'Karl McGuinness',
+			desc: 'Mission is now a first-class protocol object — is the layer strong enough?',
+			href: 'https://www.linkedin.com/pulse/aauth-now-has-mission-layer-karl-mcguinness-uhqjc/',
+			date: '2026-04-15'
+		},
 		{
 			title: 'AAuth Full Demo',
 			author: 'Christian Posta',
@@ -286,7 +286,7 @@ ${participants}
 			that authorization, governance, and federation build on.
 		</p> -->
 
-		<div class="flex justify-center gap-4 flex-wrap mb-16">
+		<!-- <div class="flex justify-center gap-4 flex-wrap mb-16">
 			<a
 				href="https://playground.aauth.dev"
 				onmouseenter={() => playgroundTrigger++}
@@ -302,7 +302,7 @@ ${participants}
 			>
 				<DecryptText text="Get Started" trigger={getStartedTrigger} />
 			</a>
-		</div>
+		</div> -->
 
 		<!-- Scroll hint -->
 		<div class="animate-bounce text-[var(--color-text-dim)]">
@@ -327,32 +327,11 @@ ${participants}
 			</p>
 		</InView>
 
-		<div
-			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-			onmousemove={(e) => {
-				const cards = e.currentTarget.querySelectorAll('.glow-card');
-				cards.forEach((card) => {
-					const r = card.getBoundingClientRect();
-					const mx = e.clientX - r.left;
-					const my = e.clientY - r.top;
-					card.style.setProperty('--mx', `${mx}px`);
-					card.style.setProperty('--my', `${my}px`);
-					const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
-					const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
-					const dist = Math.hypot(dx, dy);
-					card.style.setProperty('--glow-opacity', dist < 120 ? '1' : '0');
-				});
-			}}
-			onmouseleave={(e) => {
-				e.currentTarget.querySelectorAll('.glow-card').forEach((c) => {
-					c.style.setProperty('--glow-opacity', '0');
-				});
-			}}
-		>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 			{#each features as feature, i}
 				<InView class="delay-{i}">
 					<div
-						class="glow-card p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] cursor-default select-none"
+						class="p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]"
 					>
 						<h3 class="text-lg font-semibold mb-2 font-mono"><span class="text-[var(--color-accent)]">&gt;</span> {feature.title}</h3>
 						<p class="text-sm text-[var(--color-text-muted)] leading-relaxed">{feature.desc}</p>
@@ -364,6 +343,7 @@ ${participants}
 </section>
 
 <!-- Compare -->
+{#if false}
 <section class="py-14 md:py-24 px-6">
 	<div class="max-w-5xl mx-auto">
 		<InView>
@@ -454,6 +434,7 @@ ${participants}
 		</InView>
 	</div>
 </section>
+{/if}
 
 <!-- How AAuth Works -->
 <section id="how-it-works" class="py-14 md:py-24 px-6">
@@ -575,14 +556,14 @@ ${participants}
 <section id="get-started" class="py-14 md:py-24 px-6">
 	<div class="max-w-6xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Get Started</h2>
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Learn More</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
-				Everything you need to build with AAuth.
+				Read the drafts, explore the SDKs, follow the conversation.
 			</p>
 		</InView>
 
 		<div
-			class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto"
+			class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
 			onmousemove={(e) => {
 				const cards = e.currentTarget.querySelectorAll('.glow-card');
 				cards.forEach((card) => {
@@ -631,22 +612,9 @@ ${participants}
 			{/each}
 		</div>
 
-	</div>
-</section>
-
-<!-- Deep Dives -->
-<section class="py-14 md:py-24 px-6">
-	<div class="max-w-4xl mx-auto">
-		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">From the Community</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
-				Articles, demos, and perspectives.
-			</p>
-		</InView>
-
 		<InView>
 			<div
-				class="space-y-3"
+				class="space-y-3 max-w-4xl mx-auto mt-12"
 				onmousemove={(e) => {
 					const cards = e.currentTarget.querySelectorAll('.glow-card');
 					cards.forEach((card) => {

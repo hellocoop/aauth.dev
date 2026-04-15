@@ -23,7 +23,7 @@
 	const links = [
 		{ href: '#compare', label: 'Why AAuth' },
 		{ href: '#how-it-works', label: 'How It Works' },
-		{ href: '#get-started', label: 'Get Started' }
+		{ href: '#get-started', label: 'Learn More' }
 	];
 </script>
 
@@ -45,14 +45,14 @@
 			{#each links as link}
 				<a href={link.href} class="text-[var(--color-text-muted)] hover:text-white transition-colors no-underline">{link.label}</a>
 			{/each}
-			<a
+			<!-- <a
 				href="https://github.com/dickhardt/AAuth"
 				target="_blank"
 				rel="noopener"
 				class="text-[var(--color-text-muted)] hover:text-white transition-colors no-underline"
 			>
 				GitHub ↗
-			</a>
+			</a> -->
 		</div>
 
 		<button
@@ -88,7 +88,7 @@
 					{link.label}
 				</a>
 			{/each}
-			<a
+			<!-- <a
 				href="https://github.com/dickhardt/AAuth"
 				target="_blank"
 				rel="noopener"
@@ -96,7 +96,7 @@
 				class="text-lg py-3 text-[var(--color-text)] no-underline"
 			>
 				GitHub ↗
-			</a>
+			</a> -->
 		</div>
 	</div>
 {/if}
