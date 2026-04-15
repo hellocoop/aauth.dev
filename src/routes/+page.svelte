@@ -74,7 +74,11 @@
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token
-    R-->>A: 200 OK`
+    R-->>A: 200 OK`,
+			steps: [
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token'] },
+				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
+			]
 		},
 		{
 			name: 'Resource-Managed',
@@ -88,7 +92,16 @@ ${participants}
     A->>R: GET pending URL
     R-->>A: 200 OK\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>AAuth-Access:<br/>opaque-token\u00A0\u200D
     A->>R: HTTPSig w/ agent token<br/>Authorization:\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>AAuth opaque-token\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: 200 OK`
+    R-->>A: 200 OK`,
+			steps: [
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token'] },
+				{ from: 'Resource', to: 'Agent', lines: ['202 (interaction required)'], dashed: true },
+				{ note: 'user completes interaction' },
+				{ from: 'Agent', to: 'Resource', lines: ['GET pending URL'] },
+				{ from: 'Resource', to: 'Agent', lines: ['200 OK', 'AAuth-Access: opaque-token'], dashed: true },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'Authorization: AAuth opaque-token'] },
+				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
+			]
 		},
 		{
 			name: 'PS-Managed',
@@ -101,7 +114,15 @@ ${participants}
     A->>P: HTTPSig w/ agent token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
     P-->>A: auth_token
     A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
-    R-->>A: 200 OK`
+    R-->>A: 200 OK`,
+			steps: [
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = PS URL)'], dashed: true },
+				{ from: 'Agent', to: 'PS', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
+				{ from: 'PS', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
+				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
+			]
 		},
 		{
 			name: 'Federated',
@@ -116,7 +137,17 @@ ${participants}
     S-->>P: auth_token
     P-->>A: auth_token
     A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
-    R-->>A: 200 OK`
+    R-->>A: 200 OK`,
+			steps: [
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = AS URL)'], dashed: true },
+				{ from: 'Agent', to: 'PS', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
+				{ from: 'PS', to: 'AS', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
+				{ from: 'AS', to: 'PS', lines: ['auth_token'], dashed: true },
+				{ from: 'PS', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
+				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
+			]
 		}
 	];
 
@@ -459,7 +490,35 @@ ${participants}
 				<div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] overflow-hidden">
 					<div class="p-6">
 						<p class="text-[var(--color-text-muted)] mb-6">{modes[activeMode].desc}</p>
-						<div class="bg-[var(--color-bg-code)] rounded-lg p-5 min-h-[470px] overflow-x-auto md:overflow-hidden">
+						<!-- Mobile: vertical step-list -->
+						<div class="md:hidden bg-[var(--color-bg-code)] rounded-lg p-5">
+							<ol class="space-y-3">
+								{#each modes[activeMode].steps as step, i}
+									{#if step.note}
+										<li class="text-xs text-center text-[var(--color-text-dim)] italic py-2 border-y border-[var(--color-border)] font-mono">
+											{step.note}
+										</li>
+									{:else}
+										<li class="flex gap-3">
+											<span class="text-xs font-mono text-[var(--color-text-dim)] mt-0.5 w-5 shrink-0 text-right">{i + 1}</span>
+											<div class="flex-1 min-w-0">
+												<div class="font-mono text-xs text-[var(--color-text-muted)] mb-1">
+													<span>{step.from}</span>
+													<span class="text-[var(--color-accent)] mx-1">{step.dashed ? '⇠' : '→'}</span>
+													<span>{step.to}</span>
+												</div>
+												{#each step.lines as line}
+													<div class="font-mono text-xs text-[var(--color-text)] break-words leading-relaxed">{line}</div>
+												{/each}
+											</div>
+										</li>
+									{/if}
+								{/each}
+							</ol>
+						</div>
+
+						<!-- Desktop: Mermaid sequence diagram -->
+						<div class="hidden md:block bg-[var(--color-bg-code)] rounded-lg p-5 min-h-[470px] overflow-x-auto md:overflow-hidden">
 							{#each modes as mode, i}
 								<div class="w-full {i === activeMode ? '' : 'hidden'}">
 									<Mermaid chart={mode.diagram} />
