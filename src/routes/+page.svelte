@@ -343,7 +343,37 @@ ${participants}
 		</InView>
 
 		<InView>
-			<div class="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]">
+			<!-- Mobile: stacked cards per attribute -->
+			<div class="md:hidden space-y-3">
+				{#each [
+					{ attr: 'Registration', api: 'Per service', oauth: 'Per authorization server', aauth: 'None — self-published' },
+					{ attr: 'Credential', api: 'Shared secret', oauth: 'Client auth + bearer token', aauth: "Agent's signing key" },
+					{ attr: 'Presentation', api: 'Bearer', oauth: 'Bearer (DPoP optional)', aauth: 'HTTP Message Signature' },
+					{ attr: 'Verification', api: 'Pre-shared per service', oauth: 'Via the AS', aauth: 'Any party via JWKS' },
+					{ attr: 'User delegation', api: 'None', oauth: 'Through the AS', aauth: 'Per-request via PS / AS' }
+				] as row}
+					<div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4">
+						<h3 class="text-xs uppercase tracking-wider text-[var(--color-text-dim)] font-medium mb-3">{row.attr}</h3>
+						<dl class="space-y-2 text-sm">
+							<div class="flex gap-3">
+								<dt class="w-32 shrink-0 text-[var(--color-text-muted)]">API Keys</dt>
+								<dd>{row.api}</dd>
+							</div>
+							<div class="flex gap-3">
+								<dt class="w-32 shrink-0 text-[var(--color-text-muted)]">OAuth / OIDC</dt>
+								<dd>{row.oauth}</dd>
+							</div>
+							<div class="flex gap-3">
+								<dt class="w-32 shrink-0 text-[var(--color-accent)] font-semibold">AAuth</dt>
+								<dd>{row.aauth}</dd>
+							</div>
+						</dl>
+					</div>
+				{/each}
+			</div>
+
+			<!-- Desktop: full table -->
+			<div class="hidden md:block overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)]">
 				<table class="w-full text-sm">
 					<thead>
 						<tr class="border-b border-[var(--color-border)]">
