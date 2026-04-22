@@ -183,6 +183,21 @@ ${participants}
 		}
 	];
 
+	const tools = [
+		{
+			name: 'Playground',
+			iconGlyph: '>',
+			desc: 'Interactive sandbox for driving AAuth flows against live endpoints.',
+			href: 'https://playground.aauth.dev'
+		},
+		{
+			name: 'Protocol Explorer',
+			iconPath: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z',
+			desc: 'Browse access modes, tokens, and headers with side-by-side wire examples.',
+			href: 'https://explorer.aauth.dev'
+		}
+	];
+
 	const platforms = [
 		{
 			name: 'Specifications',
@@ -286,7 +301,7 @@ ${participants}
 			that authorization, governance, and federation build on.
 		</p> -->
 
-		<!-- <div class="flex justify-center gap-4 flex-wrap mb-16">
+		<div class="flex justify-center gap-4 flex-wrap mb-16">
 			<a
 				href="https://playground.aauth.dev"
 				onmouseenter={() => playgroundTrigger++}
@@ -296,13 +311,13 @@ ${participants}
 				<DecryptText text="Try the Playground" trigger={playgroundTrigger} />
 			</a>
 			<a
-				href="#get-started"
+				href="https://explorer.aauth.dev"
 				onmouseenter={() => getStartedTrigger++}
 				class="font-display inline-flex items-center justify-center gap-2 px-7 py-3.5 w-full sm:w-auto rounded-lg border border-[var(--color-accent)] text-[var(--color-accent)] font-medium no-underline"
 			>
-				<DecryptText text="Get Started" trigger={getStartedTrigger} />
+				<DecryptText text="Protocol Explorer" trigger={getStartedTrigger} />
 			</a>
-		</div> -->
+		</div>
 
 		<!-- Scroll hint -->
 		<div class="animate-bounce text-[var(--color-text-dim)]">
@@ -561,6 +576,49 @@ ${participants}
 				Read the drafts, explore the SDKs, follow the conversation.
 			</p>
 		</InView>
+
+		<div
+			class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto mb-4"
+			onmousemove={(e) => {
+				const cards = e.currentTarget.querySelectorAll('.glow-card');
+				cards.forEach((card) => {
+					const r = card.getBoundingClientRect();
+					card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+					card.style.setProperty('--my', `${e.clientY - r.top}px`);
+					const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
+					const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+					card.style.setProperty('--glow-opacity', Math.hypot(dx, dy) < 120 ? '1' : '0');
+				});
+			}}
+			onmouseleave={(e) => {
+				e.currentTarget.querySelectorAll('.glow-card').forEach((c) => {
+					c.style.setProperty('--glow-opacity', '0');
+				});
+			}}
+		>
+			{#each tools as tool}
+				<InView class="h-full">
+					<a
+						href={tool.href}
+						target="_blank"
+						rel="noopener"
+						class="glow-card block h-full p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] no-underline transition-transform duration-200 hover:scale-[1.02]"
+					>
+						<h3 class="font-semibold mb-1 flex items-center gap-2">
+							{#if tool.iconPath}
+								<svg class="w-[14px] h-[14px] text-[var(--color-accent)]" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" d={tool.iconPath} />
+								</svg>
+							{:else}
+								<span class="font-mono text-[var(--color-accent)] w-[18px] text-center">{tool.iconGlyph}</span>
+							{/if}
+							{tool.name}
+						</h3>
+						<p class="text-sm text-[var(--color-text-muted)]">{tool.desc}</p>
+					</a>
+				</InView>
+			{/each}
+		</div>
 
 		<div
 			class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
