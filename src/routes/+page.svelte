@@ -104,7 +104,7 @@ ${participants}
 		{
 			name: 'Resource-Managed',
 			parties: 'Agent + Resource',
-			desc: 'Resource handles authorization itself — via user interaction, consent, or an existing OAuth / OIDC provider. Drop-in for OAuth / OIDC shops.',
+			desc: 'Resource handles authorization itself — via user interaction, consent, or an existing OAuth / OIDC provider.',
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token
