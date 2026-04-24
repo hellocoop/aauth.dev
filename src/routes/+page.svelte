@@ -313,16 +313,13 @@ ${participants}
 		<h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1] uppercase">
 			Software Is <span class="text-[var(--color-accent)]">Changing</span>
 		</h1>
-		<p class="text-[24.5px] font-semibold text-[var(--color-text)] max-w-5xl mx-auto mb-8 leading-tight uppercase tracking-tight">
-			AI Writes Code. Agents Run It. Software Now Acts <span class="text-[var(--color-accent)]">On Its Own</span>.
+		<p class="text-[24.5px] font-semibold text-[var(--color-text)] max-w-5xl mx-auto mb-8 leading-tight tracking-tight">
+			Clients used to be written. Now agents assemble them <span class="text-[var(--color-accent)]">at runtime</span>.
 		</p>
 		<p class="text-xl md:text-2xl text-[var(--color-text-muted)] max-w-4xl mx-auto mb-12 leading-relaxed">
-			HTTP clients need their own identity.
+			The protocols underneath weren't built for that.
 		</p>
-		<!-- <p class="text-lg text-[var(--color-text-dim)] max-w-2xl mx-auto mb-12 leading-relaxed">
-			A domain, static metadata, and a JWKS. That's it. This is the foundation
-			that authorization, governance, and federation build on.
-		</p> -->
+	
 
 		<div class="flex justify-center gap-4 flex-wrap mb-16">
 			<a
