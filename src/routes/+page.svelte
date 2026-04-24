@@ -31,56 +31,64 @@
 	const features = [
 		{
 			title: "Client IDs Don't Travel",
-			desc: 'In OAuth and OIDC, a client has no independent identity — a client_id at Google is meaningless at GitHub. Identity has to travel with the client itself, not be reissued at each service.',
+			desc: 'In OAuth and OIDC, a client has no independent identity — a client_id at Google is meaningless at GitHub. Agents have no identity of their own to carry between services.',
 			color: 'var(--color-agent)'
 		},
 		{
 			title: 'Copied Secrets Leak',
-			desc: "API keys are a shared secret issued by the service and copied to the client. Any secret copied to where the workload runs will eventually be copied somewhere it shouldn’t be.",
+			desc: "API keys are a shared secret issued by the service and copied to the client. Any secret copied to a workload will eventually leak somewhere it shouldn’t.",
 			color: 'var(--color-resource)'
 		},
 		{
 			title: 'Decisions Happen Mid-Task',
-			desc: 'Software now needs authorization decisions mid-task — long after the user set it in motion. Consent and approval arrive on human timelines. Pending has to be a first-class state.',
+			desc: "Agents need authorization decisions mid-task. Consent lands on human timelines — and today's protocols treat pending as an error, not a first-class state.",
 			color: 'var(--color-ps)'
 		},
 		{
-			title: 'Tool Calls Need Governance',
-			desc: "Software composes its tool chain at runtime. A user can’t mediate each call — a server representing them has to decide which tools may be invoked and audit every one.",
+			title: 'Tool Chains Assemble Live',
+			desc: "Agents pick their tool chain at runtime, one call at a time. The sequence isn't declared in code — they choose the next tool as the task unfolds, and the chain shifts with every task.",
 			color: 'var(--color-as)'
 		},
 		{
-			title: 'Requests Carry Intent',
-			desc: "Policy needs to know what the caller is trying to do, not just which endpoints it wants. Intent has to travel in the request, so every access can be evaluated in context.",
+			title: "Scopes Don't Capture Intent",
+			desc: "A scope is standing permission, not per-call intent. `mail.read` looks the same whether the agent is summarizing or scraping — policy can't tell them apart.",
 			color: 'var(--color-ps)'
 		},
 		{
 			title: 'Calls Cross Trust Domains',
-			desc: 'A single request now touches resources across orgs, clouds, identity domains. Enterprise workload identity (SPIFFE) stops at the trust-domain edge — authority has to federate across them.',
+			desc: "A single task can span orgs, clouds, and identity domains. Workload identity (SPIFFE) stops at the trust-domain edge — and authority stops there too.",
 			color: 'var(--color-agent)'
 		}
 	];
 
 	const demos = [
 		{
+			name: 'Protocol Explorer',
+			iconPath: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z',
+			desc: 'Browse AAuth access modes, tokens, and headers with side-by-side wire examples.',
+			primary: 'https://explorer.aauth.dev',
+			primaryLabel: 'Open Explorer',
+			source: null
+		},
+		{
 			name: 'whoami.aauth.dev',
 			logo: '/demos/whoami.png',
-			desc: 'A minimal AAuth identity resource. Sign a request, release identity claims.',
-			playground: 'https://playground.aauth.dev',
-			metadata: 'https://whoami.aauth.dev/.well-known/aauth-resource.json',
+			desc: "A minimal AAuth identity resource — one endpoint that returns who the caller is.",
+			primary: 'https://playground.aauth.dev',
+			primaryLabel: 'Try in Playground',
 			source: 'https://github.com/aauth-dev/whoami'
 		},
 		{
 			name: 'notes.aauth.dev',
 			logo: '/demos/notes.png',
-			desc: 'An OpenAPI notes API where agents declare which operations they need — not scopes. Consent is over what the caller can do, not the endpoints it hits.',
-			playground: 'https://playground.aauth.dev',
-			metadata: 'https://notes.aauth.dev/.well-known/aauth-resource.json',
+			desc: "A notes API using <a href=\"https://github.com/dickhardt/AAuth/blob/main/draft-hardt-aauth-r3.md\" target=\"_blank\" rel=\"noopener\" class=\"text-[var(--color-text)] hover:underline\">AAuth R3 ↗</a>. Agents declare OpenAPI operations; consent is over actions, not endpoints.",
+			primary: 'https://playground.aauth.dev',
+			primaryLabel: 'Try in Playground',
 			source: 'https://github.com/aauth-dev/notes'
 		}
 	];
 
-	let demoTriggers = $state([0, 0]);
+	let demoTriggers = $state([0, 0, 0]);
 
 	const participants = `    participant A as Agent
     participant R as Resource
@@ -204,40 +212,25 @@ ${participants}
 		}
 	];
 
-	const tools = [
-		{
-			name: 'Playground',
-			iconGlyph: '>',
-			desc: 'Interactive sandbox for driving AAuth flows against live endpoints.',
-			href: 'https://playground.aauth.dev'
-		},
-		{
-			name: 'Protocol Explorer',
-			iconPath: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z',
-			desc: 'Browse access modes, tokens, and headers with side-by-side wire examples.',
-			href: 'https://explorer.aauth.dev'
-		}
-	];
-
 	const platforms = [
 		{
 			name: 'Specifications',
-			icon: 'github',
+			iconPath: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
 			desc: 'The Internet-Drafts defining the AAuth protocol and signatures.',
 			href: 'https://github.com/dickhardt/AAuth',
 			available: true
 		},
 		{
-			name: 'Node.js / TypeScript',
+			name: 'Node.js SDK',
 			icon: 'nodedotjs',
 			desc: 'Reference SDK for agents and MCP servers with signed-request auth.',
 			href: 'https://github.com/hellocoop/AAuth',
 			available: true
 		},
 		{
-			name: 'Python Demo',
+			name: 'Python Demo Source',
 			icon: 'python',
-			desc: 'End-to-end A2A multi-agent demo with Keycloak and user consent.',
+			desc: 'End-to-end A2A multi-agent flow with Keycloak and user consent.',
 			href: 'https://github.com/christian-posta/aauth-full-demo',
 			available: true
 		}
@@ -359,9 +352,9 @@ ${participants}
 	<div class="max-w-6xl mx-auto">
 		<InView>
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">What Changed</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-4xl mx-auto mb-16 text-lg">
+			<p class="text-center text-[var(--color-text-muted)] max-w-5xl mx-auto mb-16 text-lg">
 				Software used to know at build time what it would call and what it would need.<br class="hidden sm:inline" />
-				Now models write, agents compose, tool chains assemble at runtime — old protocols don't fit.
+				Now agents decide in the moment, against services they've never seen — the old protocols assumed neither.
 			</p>
 		</InView>
 
@@ -613,94 +606,46 @@ ${participants}
 
 
 
-<!-- See It Running -->
-<section id="see-it-running" class="py-14 md:py-24 px-6">
+<!-- Get Started -->
+<section id="get-started" class="py-14 md:py-24 px-6">
 	<div class="max-w-6xl mx-auto">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">See It Running</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-3xl mx-auto mb-12 text-lg">
-				Two live resources running end-to-end. Bootstrap an agent in the Playground and watch the flow — signed requests, PS-brokered consent, access granted.
+			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Explore AAuth</h2>
+			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
+				Try the protocol, explore the SDKs, and follow the conversation.
 			</p>
 		</InView>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+		<div class="grid grid-cols-1 gap-4 max-w-4xl mx-auto mb-9">
 			{#each demos as demo, i}
 				<InView class="h-full">
 					<div class="h-full p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] flex flex-col">
 						<h3 class="font-mono font-semibold mb-2 flex items-center gap-3">
-							<img src={demo.logo} alt="" width="32" height="32" class="inline-block" />
+							{#if demo.logo}
+								<img src={demo.logo} alt="" width="32" height="32" class="inline-block" />
+							{:else if demo.iconPath}
+								<svg class="w-8 h-8 text-[var(--color-accent)]" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" d={demo.iconPath} />
+								</svg>
+							{/if}
 							{demo.name}
 						</h3>
-						<p class="text-sm text-[var(--color-text-muted)] mb-5 leading-relaxed">{demo.desc}</p>
+						<p class="text-sm text-[var(--color-text-muted)] mb-5 leading-relaxed">{@html demo.desc}</p>
 						<div class="mt-auto flex flex-wrap gap-4 text-sm">
 							<a
-								href={demo.playground}
+								href={demo.primary}
 								target="_blank"
 								rel="noopener"
 								onmouseenter={() => (demoTriggers[i] = demoTriggers[i] + 1)}
 								class="text-[var(--color-accent)] no-underline"
 							>
-								<DecryptText text="Try in Playground ↗" trigger={demoTriggers[i]} />
+								<DecryptText text={`${demo.primaryLabel} ↗`} trigger={demoTriggers[i]} />
 							</a>
-							<a href={demo.source} target="_blank" rel="noopener" class="text-[var(--color-text-muted)] no-underline hover:underline">Source ↗</a>
+							{#if demo.source}
+								<a href={demo.source} target="_blank" rel="noopener" class="text-[var(--color-text-muted)] no-underline hover:underline">Source ↗</a>
+							{/if}
 						</div>
 					</div>
-				</InView>
-			{/each}
-		</div>
-	</div>
-</section>
-
-
-<!-- Get Started -->
-<section id="get-started" class="py-14 md:py-24 px-6">
-	<div class="max-w-6xl mx-auto">
-		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Learn More</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
-				Read the drafts, explore the SDKs, follow the conversation.
-			</p>
-		</InView>
-
-		<div
-			class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto mb-4"
-			onmousemove={(e) => {
-				const cards = e.currentTarget.querySelectorAll('.glow-card');
-				cards.forEach((card) => {
-					const r = card.getBoundingClientRect();
-					card.style.setProperty('--mx', `${e.clientX - r.left}px`);
-					card.style.setProperty('--my', `${e.clientY - r.top}px`);
-					const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
-					const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
-					card.style.setProperty('--glow-opacity', Math.hypot(dx, dy) < 120 ? '1' : '0');
-				});
-			}}
-			onmouseleave={(e) => {
-				e.currentTarget.querySelectorAll('.glow-card').forEach((c) => {
-					c.style.setProperty('--glow-opacity', '0');
-				});
-			}}
-		>
-			{#each tools as tool}
-				<InView class="h-full">
-					<a
-						href={tool.href}
-						target="_blank"
-						rel="noopener"
-						class="glow-card block h-full p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] no-underline transition-transform duration-200 hover:scale-[1.02]"
-					>
-						<h3 class="font-semibold mb-1 flex items-center gap-2">
-							{#if tool.iconPath}
-								<svg class="w-[14px] h-[14px] text-[var(--color-accent)]" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" d={tool.iconPath} />
-								</svg>
-							{:else}
-								<span class="font-mono text-[var(--color-accent)] w-[18px] text-center">{tool.iconGlyph}</span>
-							{/if}
-							{tool.name}
-						</h3>
-						<p class="text-sm text-[var(--color-text-muted)]">{tool.desc}</p>
-					</a>
 				</InView>
 			{/each}
 		</div>
@@ -733,7 +678,11 @@ ${participants}
 						class="glow-card block h-full p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] no-underline transition-transform duration-200 hover:scale-[1.02]"
 					>
 						<h3 class="font-semibold mb-1 flex items-center gap-2">
-							{#if platform.iconGlyph}
+							{#if platform.iconPath}
+								<svg class="w-[18px] h-[18px] text-[var(--color-text)]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" d={platform.iconPath} />
+								</svg>
+							{:else if platform.iconGlyph}
 								<span class="font-mono text-[var(--color-text)] w-[18px] text-center">{platform.iconGlyph}</span>
 							{:else}
 								<img
@@ -757,7 +706,7 @@ ${participants}
 
 		<InView>
 			<div
-				class="space-y-3 max-w-4xl mx-auto mt-12"
+				class="space-y-3 max-w-4xl mx-auto mt-9"
 				onmousemove={(e) => {
 					const cards = e.currentTarget.querySelectorAll('.glow-card');
 					cards.forEach((card) => {
