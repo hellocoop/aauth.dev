@@ -25,6 +25,20 @@ const PATH_TO_KEY = {
 };
 
 /**
+ * Permanent short links we control. Targets can be rotated without breaking
+ * any external references (READMEs, posts, screenshots).
+ *
+ * 302 (not 301) because the IETF Slack invite expires every 30 days and we
+ * don't want browsers caching a stale target.
+ *
+ * @type {Record<string, string>}
+ */
+const REDIRECTS = {
+	'/ietf-slack': 'https://join.slack.com/t/ietf/shared_invite/zt-3wlnl6g9t-UF~rAQwk06nNJUM6QtaaPg',
+	'/slack': 'https://join.slack.com/t/aauth/shared_invite/zt-3wsxbrzfk-oYb3xNWVPLZICkXwuJpaDg',
+};
+
+/**
  * Map a URL path to an R2 object key.
  * @param {string} pathname
  * @returns {string}
@@ -56,6 +70,11 @@ export default {
 	 */
 	async fetch(request, env) {
 		const url = new URL(request.url);
+
+		const redirectTarget = REDIRECTS[url.pathname];
+		if (redirectTarget) {
+			return Response.redirect(redirectTarget, 302);
+		}
 
 		// llms.txt is always served from static assets (no negotiation);
 		// rewrite Content-Type so browsers treat it as UTF-8 and em-dashes render correctly.

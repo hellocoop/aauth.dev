@@ -241,13 +241,13 @@ ${participants}
 		{
 			name: 'IETF Slack',
 			desc: 'IETF #aauth channel for AAuth specification discussion and feedback.',
-			href: 'https://join.slack.com/t/ietf/shared_invite/zt-3wlnl6g9t-UF~rAQwk06nNJUM6QtaaPg',
+			href: 'https://www.aauth.dev/ietf-slack',
 			logo: '/ietf.jpg'
 		},
 		{
 			name: 'AAuth Slack',
 			desc: 'AAuth community Slack for implementation discussion and questions.',
-			href: 'https://join.slack.com/t/aauth/shared_invite/zt-3wsxbrzfk-oYb3xNWVPLZICkXwuJpaDg',
+			href: 'https://www.aauth.dev/slack',
 			logo: '/aauth.png'
 		}
 	];
