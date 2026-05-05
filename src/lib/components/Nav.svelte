@@ -24,11 +24,12 @@
 </script>
 
 <nav
-	class="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between gap-4 px-5 md:px-8 py-3.5 border-b transition-[background-color,backdrop-filter,border-color] duration-300 {scrolled || mobileOpen
+	class="fixed top-0 left-0 right-0 z-[100] border-b transition-[background-color,backdrop-filter,border-color] duration-300 {scrolled || mobileOpen
 		? 'border-[var(--color-border)] bg-[var(--color-bg)]/90 backdrop-blur-md'
 		: 'border-transparent'}"
 	aria-label="Main"
 >
+	<div class="max-w-6xl mx-auto flex items-center justify-between gap-4 px-5 md:px-8 py-3.5">
 	<a
 		href="/"
 		class="no-underline relative z-10 shrink-0"
@@ -74,6 +75,7 @@
 				</svg>
 			{/if}
 		</button>
+	</div>
 	</div>
 </nav>
 
