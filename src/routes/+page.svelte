@@ -153,7 +153,7 @@ ${participants}
 			]
 		},
 		{
-			name: 'PS-Managed',
+			name: 'Person Server (PS) Managed',
 			parties: 'Agent + Resource + Person Server (PS)',
 			desc: 'Access is brokered by a server representing the user — the Person Server (PS). It handles consent and issues the auth token; the resource stays focused on its API.',
 			diagram: `sequenceDiagram
