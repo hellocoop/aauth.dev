@@ -344,9 +344,9 @@ ${participants}
 
 <Nav />
 
-<!-- Hero (fixed behind content — content below scrolls over it). pointer-events: only interactive inner column receives clicks so nav stays usable. -->
+<!-- Hero (fixed behind content — content below scrolls over it). pointer-events: only interactive inner column receives clicks so nav stays usable. h-[100lvh] keeps the hero anchored to the large viewport so content doesn't shift when the mobile URL bar collapses. -->
 <section
-	class="fixed inset-0 flex items-center justify-center px-6 pt-16 overflow-hidden z-0 pointer-events-none"
+	class="fixed top-0 left-0 w-screen h-[100lvh] flex items-center justify-center px-6 pt-16 overflow-hidden z-0 pointer-events-none"
 >
 	<div class="hero-burst absolute inset-0 opacity-25 pointer-events-none [filter:saturate(0.5)]">
 		<video
@@ -402,7 +402,7 @@ ${participants}
 </section>
 
 <!-- Spacer reserves viewport height for the fixed hero -->
-<div class="h-screen" aria-hidden="true"></div>
+<div class="h-[100lvh]" aria-hidden="true"></div>
 
 <!-- Scrolling content covers the fixed hero background -->
 <div class="relative z-10 bg-[var(--color-bg)] border-t border-[var(--color-accent)]/25 shadow-[0_-8px_32px_-12px_color-mix(in_srgb,var(--color-accent)_18%,transparent)]">
