@@ -3,7 +3,26 @@
 	import InView from '$lib/components/InView.svelte';
 	import Mermaid from '$lib/components/Mermaid.svelte';
 	import DecryptText from '$lib/components/DecryptText.svelte';
-	import PrismaticBurst from '$lib/components/PrismaticBurst.svelte';
+
+	let bgVideo;
+	let bgFading = $state(false);
+	const FADE_MS = 600;
+
+	$effect(() => {
+		if (!bgVideo) return;
+		const video = bgVideo;
+
+		const onTimeUpdate = () => {
+			if (!video.duration || !isFinite(video.duration)) return;
+			const remaining = video.duration - video.currentTime;
+			bgFading = remaining < FADE_MS / 1000;
+		};
+
+		video.addEventListener('timeupdate', onTimeUpdate);
+		return () => {
+			video.removeEventListener('timeupdate', onTimeUpdate);
+		};
+	});
 
 	let playgroundTrigger = $state(0);
 	let getStartedTrigger = $state(0);
@@ -91,10 +110,20 @@
 	let demoTriggers = $state([0, 0, 0]);
 	let lumaTrigger = $state(0);
 
+	let lumaTheme = $state('dark');
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const mql = window.matchMedia('(prefers-color-scheme: light)');
+		const update = () => (lumaTheme = mql.matches ? 'light' : 'dark');
+		update();
+		mql.addEventListener('change', update);
+		return () => mql.removeEventListener('change', update);
+	});
+
 	const participants = `    participant A as Agent
     participant R as Resource
-    participant P as PS
-    participant S as AS`;
+    participant P as Person Server (PS)
+    participant S as Access Server (AS)`;
 
 	const modes = [
 		{
@@ -134,34 +163,34 @@ ${participants}
 			]
 		},
 		{
-			name: 'PS-Managed',
-			parties: 'Agent + Resource + PS',
-			desc: 'Access is brokered by a server representing the user — the PS. It handles consent and issues the auth token; the resource stays focused on its API.',
+			name: 'Person Server (PS) Managed',
+			parties: 'Agent + Resource + Person Server (PS)',
+			desc: 'Access is brokered by a server representing the user — the Person Server (PS). It handles consent and issues the auth token; the resource stays focused on its API.',
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token<br/>(aud = PS URL)
+    R-->>A: resource_token                <br/>(aud = Person Server (PS) URL)‍
     A->>P: HTTPSig w/ agent token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
     P-->>A: auth_token
     A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
     R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = PS URL)'], dashed: true },
-				{ from: 'Agent', to: 'PS', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
-				{ from: 'PS', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Person Server (PS) URL)'], dashed: true },
+				{ from: 'Agent', to: 'Person Server (PS)', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
+				{ from: 'Person Server (PS)', to: 'Agent', lines: ['auth_token'], dashed: true },
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
 		},
 		{
 			name: 'Federated',
-			parties: 'Agent + Resource + PS + AS',
-			desc: 'Internet-scale mode for cross-organization access. Resource has its own Access Server; PS federates with AS across trust domains to obtain the auth token.',
+			parties: 'Agent + Resource + Person Server (PS) + Access Server (AS)',
+			desc: 'Internet-scale mode for cross-organization access. Resource has its own Access Server (AS); Person Server (PS) federates with Access Server (AS) across trust domains to obtain the auth token.',
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token<br/>(aud = AS URL)
+    R-->>A: resource_token                <br/>(aud = Access Server (AS) URL)‍
     A->>P: HTTPSig w/ agent token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
     P->>S: HTTPSig w/ jwks_uri<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u200D
     S-->>P: auth_token
@@ -170,11 +199,11 @@ ${participants}
     R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = AS URL)'], dashed: true },
-				{ from: 'Agent', to: 'PS', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
-				{ from: 'PS', to: 'AS', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
-				{ from: 'AS', to: 'PS', lines: ['auth_token'], dashed: true },
-				{ from: 'PS', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Access Server (AS) URL)'], dashed: true },
+				{ from: 'Agent', to: 'Person Server (PS)', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
+				{ from: 'Person Server (PS)', to: 'Access Server (AS)', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
+				{ from: 'Access Server (AS)', to: 'Person Server (PS)', lines: ['auth_token'], dashed: true },
+				{ from: 'Person Server (PS)', to: 'Agent', lines: ['auth_token'], dashed: true },
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
@@ -319,15 +348,18 @@ ${participants}
 <section
 	class="fixed inset-0 flex items-center justify-center px-6 pt-16 overflow-hidden z-0 pointer-events-none"
 >
-	<div class="hero-burst absolute inset-0 opacity-25 pointer-events-none">
-		<PrismaticBurst
-			intensity={1.8}
-			speed={0.4}
-			animationType="rotate3d"
-			distort={1.5}
-			rayCount={0}
-			colors={['#4ade80', '#38bdf8', '#a78bfa']}
-		/>
+	<div class="hero-burst absolute inset-0 opacity-25 pointer-events-none [filter:saturate(0.5)]">
+		<video
+			bind:this={bgVideo}
+			src="/bg.mp4"
+			autoplay
+			muted
+			loop
+			playsinline
+			preload="auto"
+			class="w-full h-full object-cover transition-opacity ease-in-out"
+			style="transition-duration: {FADE_MS}ms; opacity: {bgFading ? 0 : 1};"
+		></video>
 	</div>
 
 	<div class="relative z-10 max-w-5xl mx-auto text-center pointer-events-auto">
@@ -606,8 +638,7 @@ ${participants}
 					<li><span class="text-[var(--color-text-muted)]">agent_token</span> establishes the agent's identity</li>
 					<li><span class="text-[var(--color-text-muted)]">resource_token</span> describes the access needed</li>
 					<li><span class="text-[var(--color-text-muted)]">auth_token</span> grants an agent access to a resource</li>
-					<li><span class="text-[var(--color-text-muted)]">jwks_uri</span> PS's JWKS endpoint, discovered via well-known metadata</li>
-					<li><span class="text-[var(--color-text-muted)]">PS</span> Person Server &middot; <span class="text-[var(--color-text-muted)]">AS</span> Access Server</li>
+					<li><span class="text-[var(--color-text-muted)]">jwks_uri</span> Person Server (PS)'s JWKS endpoint, discovered via well-known metadata</li>
 				</ul>
 			</div>
 		</InView>
@@ -720,13 +751,19 @@ ${participants}
 							{:else if platform.iconGlyph}
 								<span class="font-mono text-[var(--color-text)] w-[18px] text-center">{platform.iconGlyph}</span>
 							{:else}
-								<img
-									src={`https://cdn.simpleicons.org/${platform.icon}/e4e4ed`}
-									alt=""
-									width="18"
-									height="18"
-									class="inline-block"
-								/>
+								<picture>
+									<source
+										srcset={`https://cdn.simpleicons.org/${platform.icon}/0f172a`}
+										media="(prefers-color-scheme: light)"
+									/>
+									<img
+										src={`https://cdn.simpleicons.org/${platform.icon}/e4e4ed`}
+										alt=""
+										width="18"
+										height="18"
+										class="inline-block"
+									/>
+								</picture>
 							{/if}
 							{platform.name}
 							{#if !platform.available}
@@ -858,7 +895,7 @@ ${participants}
 		<InView>
 			<div class="max-w-[600px] mx-auto rounded-xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-bg-card)]">
 				<iframe
-					src="https://luma.com/embed/calendar/cal-nXUxsqTY2ZQgy3b/events?lt=dark"
+					src={`https://luma.com/embed/calendar/cal-nXUxsqTY2ZQgy3b/events?lt=${lumaTheme}`}
 					width="600"
 					height="450"
 					style="border: 0; width: 100%; display: block;"
@@ -869,7 +906,6 @@ ${participants}
 		</InView>
 	</div>
 </section>
-
 
 <!-- Footer -->
 <footer class="py-16 px-6 border-t border-[var(--color-border)]">

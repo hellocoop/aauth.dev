@@ -4,7 +4,7 @@
 	let { chart } = $props();
 	let container = $state();
 	let svg = $state('');
-	/** Bumps when `data-theme` on <html> changes so diagrams re-render for light/dark. */
+	/** Bumps when the system color-scheme preference changes so diagrams re-render. */
 	let themeVersion = $state(0);
 
 	const mermaidThemeDark = {
@@ -62,11 +62,10 @@
 	};
 
 	onMount(() => {
-		const obs = new MutationObserver(() => {
-			themeVersion++;
-		});
-		obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-		return () => obs.disconnect();
+		const mql = window.matchMedia('(prefers-color-scheme: light)');
+		const onChange = () => themeVersion++;
+		mql.addEventListener('change', onChange);
+		return () => mql.removeEventListener('change', onChange);
 	});
 
 	function countSignals(src) {
@@ -78,7 +77,7 @@
 	$effect(() => {
 		if (!chart) return;
 		themeVersion;
-		const isLight = typeof document !== 'undefined' && document.documentElement.dataset.theme === 'light';
+		const isLight = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches;
 		let cancelled = false;
 		(async () => {
 			const { default: mermaid } = await import('mermaid');
