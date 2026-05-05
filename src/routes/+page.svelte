@@ -112,8 +112,8 @@
 
 	const participants = `    participant A as Agent
     participant R as Resource
-    participant P as PS
-    participant S as AS`;
+    participant P as Person Server (PS)
+    participant S as Access Server (AS)`;
 
 	const modes = [
 		{
@@ -154,33 +154,33 @@ ${participants}
 		},
 		{
 			name: 'PS-Managed',
-			parties: 'Agent + Resource + PS',
-			desc: 'Access is brokered by a server representing the user — the PS. It handles consent and issues the auth token; the resource stays focused on its API.',
+			parties: 'Agent + Resource + Person Server (PS)',
+			desc: 'Access is brokered by a server representing the user — the Person Server (PS). It handles consent and issues the auth token; the resource stays focused on its API.',
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token<br/>(aud = PS URL)
+    R-->>A: resource_token                <br/>(aud = Person Server (PS) URL)‍
     A->>P: HTTPSig w/ agent token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
     P-->>A: auth_token
     A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
     R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = PS URL)'], dashed: true },
-				{ from: 'Agent', to: 'PS', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
-				{ from: 'PS', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Person Server (PS) URL)'], dashed: true },
+				{ from: 'Agent', to: 'Person Server (PS)', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
+				{ from: 'Person Server (PS)', to: 'Agent', lines: ['auth_token'], dashed: true },
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
 		},
 		{
 			name: 'Federated',
-			parties: 'Agent + Resource + PS + AS',
-			desc: 'Internet-scale mode for cross-organization access. Resource has its own Access Server; PS federates with AS across trust domains to obtain the auth token.',
+			parties: 'Agent + Resource + Person Server (PS) + Access Server (AS)',
+			desc: 'Internet-scale mode for cross-organization access. Resource has its own Access Server (AS); Person Server (PS) federates with Access Server (AS) across trust domains to obtain the auth token.',
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token<br/>(aud = AS URL)
+    R-->>A: resource_token                <br/>(aud = Access Server (AS) URL)‍
     A->>P: HTTPSig w/ agent token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
     P->>S: HTTPSig w/ jwks_uri<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u200D
     S-->>P: auth_token
@@ -189,11 +189,11 @@ ${participants}
     R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = AS URL)'], dashed: true },
-				{ from: 'Agent', to: 'PS', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
-				{ from: 'PS', to: 'AS', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
-				{ from: 'AS', to: 'PS', lines: ['auth_token'], dashed: true },
-				{ from: 'PS', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Access Server (AS) URL)'], dashed: true },
+				{ from: 'Agent', to: 'Person Server (PS)', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
+				{ from: 'Person Server (PS)', to: 'Access Server (AS)', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
+				{ from: 'Access Server (AS)', to: 'Person Server (PS)', lines: ['auth_token'], dashed: true },
+				{ from: 'Person Server (PS)', to: 'Agent', lines: ['auth_token'], dashed: true },
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
@@ -626,8 +626,7 @@ ${participants}
 					<li><span class="text-[var(--color-text-muted)]">agent_token</span> establishes the agent's identity</li>
 					<li><span class="text-[var(--color-text-muted)]">resource_token</span> describes the access needed</li>
 					<li><span class="text-[var(--color-text-muted)]">auth_token</span> grants an agent access to a resource</li>
-					<li><span class="text-[var(--color-text-muted)]">jwks_uri</span> PS's JWKS endpoint, discovered via well-known metadata</li>
-					<li><span class="text-[var(--color-text-muted)]">PS</span> Person Server &middot; <span class="text-[var(--color-text-muted)]">AS</span> Access Server</li>
+					<li><span class="text-[var(--color-text-muted)]">jwks_uri</span> Person Server (PS)'s JWKS endpoint, discovered via well-known metadata</li>
 				</ul>
 			</div>
 		</InView>
