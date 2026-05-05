@@ -3,7 +3,26 @@
 	import InView from '$lib/components/InView.svelte';
 	import Mermaid from '$lib/components/Mermaid.svelte';
 	import DecryptText from '$lib/components/DecryptText.svelte';
-	import PrismaticBurst from '$lib/components/PrismaticBurst.svelte';
+
+	let bgVideo;
+	let bgFading = $state(false);
+	const FADE_MS = 600;
+
+	$effect(() => {
+		if (!bgVideo) return;
+		const video = bgVideo;
+
+		const onTimeUpdate = () => {
+			if (!video.duration || !isFinite(video.duration)) return;
+			const remaining = video.duration - video.currentTime;
+			bgFading = remaining < FADE_MS / 1000;
+		};
+
+		video.addEventListener('timeupdate', onTimeUpdate);
+		return () => {
+			video.removeEventListener('timeupdate', onTimeUpdate);
+		};
+	});
 
 	let playgroundTrigger = $state(0);
 	let getStartedTrigger = $state(0);
@@ -317,15 +336,18 @@ ${participants}
 
 <!-- Hero (fixed behind content — content below scrolls over it) -->
 <section class="fixed inset-0 flex items-center justify-center px-6 pt-16 overflow-hidden z-0">
-	<div class="absolute inset-0 opacity-25 pointer-events-none">
-		<PrismaticBurst
-			intensity={1.8}
-			speed={0.4}
-			animationType="rotate3d"
-			distort={1.5}
-			rayCount={0}
-			colors={['#4ade80', '#38bdf8', '#a78bfa']}
-		/>
+	<div class="absolute inset-0 opacity-25 pointer-events-none [filter:saturate(0.5)]">
+		<video
+			bind:this={bgVideo}
+			src="/bg.webm"
+			autoplay
+			muted
+			loop
+			playsinline
+			preload="auto"
+			class="w-full h-full object-cover transition-opacity ease-in-out"
+			style="transition-duration: {FADE_MS}ms; opacity: {bgFading ? 0 : 1};"
+		></video>
 	</div>
 
 	<div class="relative z-10 max-w-5xl mx-auto text-center">
@@ -867,7 +889,6 @@ ${participants}
 		</InView>
 	</div>
 </section>
-
 
 <!-- Footer -->
 <footer class="py-16 px-6 border-t border-[var(--color-border)]">
