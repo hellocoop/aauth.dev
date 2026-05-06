@@ -18,16 +18,12 @@ AAuth supports four resource access modes (identity-based, resource-managed, PS-
 
 - [TypeScript Reference Implementation](https://github.com/hellocoop/AAuth): Node.js / TypeScript
 - [Python Demo](https://github.com/christian-posta/aauth-full-demo): Full demo with Keycloak & Agentgateway
-- [Java Keycloak Extension](https://github.com/christian-posta/keycloak-aauth-extension): Keycloak AAuth extension
 
 ## npm Packages
 
 Building blocks for AAuth agents and MCP servers, published under the `@aauth` org on npm (current version 0.8.1):
 
-- [@aauth/bootstrap](https://www.npmjs.com/package/@aauth/bootstrap): CLI for bootstrapping AAuth agent keys and configuration
 - [@aauth/fetch](https://www.npmjs.com/package/@aauth/fetch): CLI for making AAuth-authenticated HTTP requests
-- [@aauth/local-keys](https://www.npmjs.com/package/@aauth/local-keys): Manage AAuth agent signing keys across hardware and software backends
-- [@aauth/hardware-keys](https://www.npmjs.com/package/@aauth/hardware-keys): Hardware key backends — YubiKey PIV and macOS Secure Enclave
 - [@aauth/mcp-agent](https://www.npmjs.com/package/@aauth/mcp-agent): Authenticated MCP transport with HTTP Signatures for AAuth agents
 - [@aauth/mcp-server](https://www.npmjs.com/package/@aauth/mcp-server): AAuth server-side building blocks — challenge headers, interaction management, resource tokens
 - [@aauth/mcp-stdio](https://www.npmjs.com/package/@aauth/mcp-stdio): Stdio-to-HTTP proxy for MCP with AAuth signatures
@@ -44,13 +40,19 @@ The demos and Playground run against the Hello beta Person Server; data is reset
 
 ## Community
 
+- [IETF Slack](https://www.aauth.dev/ietf-slack): IETF #aauth channel for AAuth specification discussion and feedback
+- [AAuth Slack](https://www.aauth.dev/slack): AAuth community Slack for implementation discussion and questions
 - [Office Hours](https://lu.ma/aauth): Open community calls — ask questions, share what you're building, or listen along
 
 ## Articles
 
-- [Deep Dive AAuth — Identity and Access Management for AI Agents](https://blog.christianposta.com/exploring-aauth-agent-auth-identity-and-access-management-for-ai-agents/): Comprehensive overview by Christian Posta
-- [AAuth Full Demo](https://blog.christianposta.com/aauth-full-demo/): Working demo with Keycloak, Agentgateway, Java/Python/Rust
-- [Do AI Agents Need Their Own Identity?](https://blog.christianposta.com/do-we-even-need-agent-identity/): The case for independent agent identity
+- 2026-04-28 — Mark Hendrickson, [Know Which of Your Agents Wrote What](https://markmhendrickson.com/posts/know-which-of-your-agents-wrote-what/): Per-row attribution for agent writes via AAuth identity in Neotoma
+- 2026-04-15 — Karl McGuinness, [AAuth Now Has a Mission Layer](https://www.linkedin.com/pulse/aauth-now-has-mission-layer-karl-mcguinness-uhqjc/): Mission as a first-class protocol object
+- 2026-03-31 — Christian Posta, [AAuth Full Demo](https://blog.christianposta.com/aauth-full-demo/): Working demo with Keycloak, Agentgateway, Java/Python/Rust
+- 2026-03-21 — Karl McGuinness, [Open-World OAuth Still Needs Mission Shaping](https://notes.karlmcguinness.com/notes/open-world-oauth-still-needs-mission-shaping/): Open-world OAuth, discovery, and bounded authority across delegation chains
+- 2026-03-15 — Karl McGuinness, [Mission Architecture on AAuth](https://notes.karlmcguinness.com/notes/mission-architecture-on-aauth/): Whether AAuth is the right protocol foundation for mission-bound authorization
+- 2026-02-17 — Christian Posta, [Deep Dive AAuth — Identity and Access Management for AI Agents](https://blog.christianposta.com/exploring-aauth-agent-auth-identity-and-access-management-for-ai-agents/): Comprehensive overview of AAuth architecture and design
+- 2025-06-02 — Christian Posta, [Do AI Agents Need Their Own Identity?](https://blog.christianposta.com/do-we-even-need-agent-identity/): The case for independent agent identity
 
 ## Source
 
