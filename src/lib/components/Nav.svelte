@@ -4,7 +4,11 @@
 
 	$effect(() => {
 		const onScroll = () => {
-			scrolled = window.scrollY > 20;
+			// Hysteresis: turn on past 60px, off below 30px — prevents flicker
+			// when scroll position oscillates around a single threshold.
+			const y = window.scrollY;
+			if (!scrolled && y > 60) scrolled = true;
+			else if (scrolled && y < 30) scrolled = false;
 		};
 		onScroll();
 		window.addEventListener('scroll', onScroll, { passive: true });
@@ -24,7 +28,7 @@
 </script>
 
 <nav
-	class="fixed top-0 left-0 right-0 z-[100] border-b transition-[background-color,backdrop-filter,border-color] duration-300 {scrolled || mobileOpen
+	class="fixed top-0 left-0 right-0 z-[100] border-b transition-[background-color,border-color] duration-300 {scrolled || mobileOpen
 		? 'border-[var(--color-border)] bg-[var(--color-bg)]/90 backdrop-blur-md'
 		: 'border-transparent'}"
 	aria-label="Main"
