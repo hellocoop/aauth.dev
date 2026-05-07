@@ -122,20 +122,20 @@
 
 	const participants = `    participant A as Agent
     participant R as Resource
-    participant P as Person Server (PS)
-    participant S as Access Server (AS)`;
+    participant P as Person Server
+    participant S as Access Server`;
 
 	const modes = [
 		{
 			name: 'Identity-Based',
 			parties: 'Agent + Resource',
-			desc: 'Agent signs every request. Resource verifies identity and applies its own access control. Replaces API keys.',
+			desc: 'Resource authorizes off the agent identifier alone — no authorization flow, no tokens beyond the agent token.',
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token
     R-->>A: 200 OK`,
 			steps: [
-				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token'] },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent token'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
 		},
@@ -153,44 +153,44 @@ ${participants}
     A->>R: HTTPSig w/ agent token<br/>Authorization:\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>AAuth opaque-token\u00A0\u00A0\u00A0\u00A0\u200D
     R-->>A: 200 OK`,
 			steps: [
-				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token'] },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent token'] },
 				{ from: 'Resource', to: 'Agent', lines: ['202 (interaction required)'], dashed: true },
 				{ note: 'user completes interaction' },
 				{ from: 'Agent', to: 'Resource', lines: ['GET pending URL'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK', 'AAuth-Access: opaque-token'], dashed: true },
-				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'Authorization: AAuth opaque-token'] },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent token', 'Authorization: AAuth opaque-token'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
 		},
 		{
-			name: 'Person Server (PS) Managed',
-			parties: 'Agent + Resource + Person Server (PS)',
-			desc: 'Access is brokered by a server representing the user — the Person Server (PS). It handles consent and issues the auth token; the resource stays focused on its API.',
+			name: 'Person Server Managed',
+			parties: 'Agent + Resource + Person Server',
+			desc: "Person Server handles authorization for the user — issuing the auth token after consent.",
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token                <br/>(aud = Person Server (PS) URL)‍
+    R-->>A: resource_token                <br/>(aud = Person Server URL)‍
     A->>P: HTTPSig w/ agent token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
     P-->>A: auth_token
     A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
     R-->>A: 200 OK`,
 			steps: [
-				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Person Server (PS) URL)'], dashed: true },
-				{ from: 'Agent', to: 'Person Server (PS)', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
-				{ from: 'Person Server (PS)', to: 'Agent', lines: ['auth_token'], dashed: true },
-				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent token', 'POST /authorize'] },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Person Server URL)'], dashed: true },
+				{ from: 'Agent', to: 'Person Server', lines: ['HTTPSig w/ agent token', 'POST /token w/ resource_token'] },
+				{ from: 'Person Server', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth token', 'GET /api/documents'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
 		},
 		{
 			name: 'Federated',
-			parties: 'Agent + Resource + Person Server (PS) + Access Server (AS)',
-			desc: 'Internet-scale mode for cross-organization access. Resource has its own Access Server (AS); Person Server (PS) federates with Access Server (AS) across trust domains to obtain the auth token.',
+			parties: 'Agent + Resource + Person Server + Access Server',
+			desc: "Access Server handles authorization for the resource — federating with the agent's Person Server across trust domains.",
 			diagram: `sequenceDiagram
 ${participants}
     A->>R: HTTPSig w/ agent token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token                <br/>(aud = Access Server (AS) URL)‍
+    R-->>A: resource_token                <br/>(aud = Access Server URL)‍
     A->>P: HTTPSig w/ agent token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
     P->>S: HTTPSig w/ jwks_uri<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u200D
     S-->>P: auth_token
@@ -198,13 +198,13 @@ ${participants}
     A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
     R-->>A: 200 OK`,
 			steps: [
-				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Access Server (AS) URL)'], dashed: true },
-				{ from: 'Agent', to: 'Person Server (PS)', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
-				{ from: 'Person Server (PS)', to: 'Access Server (AS)', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
-				{ from: 'Access Server (AS)', to: 'Person Server (PS)', lines: ['auth_token'], dashed: true },
-				{ from: 'Person Server (PS)', to: 'Agent', lines: ['auth_token'], dashed: true },
-				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth_token', 'GET /api/documents'] },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent token', 'POST /authorize'] },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Access Server URL)'], dashed: true },
+				{ from: 'Agent', to: 'Person Server', lines: ['HTTPSig w/ agent token', 'POST /token w/ resource_token'] },
+				{ from: 'Person Server', to: 'Access Server', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
+				{ from: 'Access Server', to: 'Person Server', lines: ['auth_token'], dashed: true },
+				{ from: 'Person Server', to: 'Agent', lines: ['auth_token'], dashed: true },
+				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth token', 'GET /api/documents'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
 			]
 		}
@@ -408,11 +408,11 @@ ${participants}
 <div class="relative z-10 bg-[var(--color-bg)] border-t border-[var(--color-accent)]/25 shadow-[0_-8px_32px_-12px_color-mix(in_srgb,var(--color-accent)_18%,transparent)]">
 
 <!-- What Changed -->
-<section id="what-changed" class="py-14 md:py-24 px-6">
-	<div class="max-w-6xl mx-auto">
+<section id="what-changed" class="py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-7xl mx-auto px-5 md:px-8">
 		<InView>
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">What Changed</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-5xl mx-auto mb-16 text-lg">
+			<p class="text-center text-[var(--color-text-muted)] mb-16 text-lg">
 				Software used to know at build time what it would call and what it would need.<br class="hidden sm:inline" />
 				Now agents decide in the moment, against services they've never seen — the old protocols assumed neither.
 			</p>
@@ -434,12 +434,12 @@ ${participants}
 </section>
 
 <!-- Why AAuth? -->
-<section id="why-aauth" class="scroll-mt-24 py-14 md:py-24 px-6">
-	<div class="max-w-4xl mx-auto">
+<section id="why-aauth" class="scroll-mt-24 py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-7xl mx-auto px-5 md:px-8">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Why AAuth?</h2>
-			<p class="text-center text-base text-[var(--color-text-muted)] italic mb-8">
-				By <a href="https://www.linkedin.com/in/dickhardt" target="_blank" rel="noopener" class="text-[var(--color-text)] hover:text-[var(--color-accent)] transition-colors not-italic">Dick Hardt</a>, author of OAuth 2.0
+			<h2 class="text-3xl md:text-4xl font-bold mb-4 uppercase">Why AAuth?</h2>
+			<p class="text-base text-[var(--color-text-muted)] italic mb-8">
+				By <a href="https://www.linkedin.com/in/dickhardt" target="_blank" rel="noopener" class="text-[var(--color-text)] hover:text-[var(--color-accent)] transition-colors">Dick Hardt</a>, author of OAuth 2.0
 			</p>
 			<div class="text-[var(--color-text-muted)] text-lg leading-relaxed space-y-5">
 				<p>
@@ -458,8 +458,8 @@ ${participants}
 
 <!-- Compare -->
 {#if false}
-<section class="py-14 md:py-24 px-6">
-	<div class="max-w-5xl mx-auto">
+<section class="py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-5xl mx-auto px-5 md:px-8">
 		<InView>
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Why Not OAuth or API Keys?</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-4xl mx-auto mb-12 text-lg">
@@ -551,42 +551,38 @@ ${participants}
 {/if}
 
 <!-- How AAuth Works -->
-<section id="how-it-works" class="scroll-mt-24 py-14 md:py-24 px-6">
-	<div class="max-w-6xl mx-auto">
+<section id="how-it-works" class="scroll-mt-24 py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-7xl mx-auto px-5 md:px-8">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">How AAuth Works</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-3xl mx-auto mb-4 text-lg">
-				AAuth has four access modes. The simplest replaces API keys;<br class="hidden sm:inline" />
-				each adds parties and capabilities. Adopt any mode independently.
+			<h2 class="text-3xl md:text-4xl font-bold mb-4 uppercase">How AAuth Works</h2>
+			<p class="text-[var(--color-text-muted)] mb-4 text-lg">
+				AAuth has four access modes. All replace API keys with cryptographic identity.<br class="hidden sm:inline" />
+				Capability grows from simplest to most capable — adopt incrementally as your needs expand.
 			</p>
 		</InView>
 
 		<InView>
-			<div class="flex items-center justify-center gap-3 flex-wrap mt-10 mb-4">
-				<span class="text-xs font-mono text-[var(--color-text-dim)] hidden sm:inline">simplest &rarr;</span>
-				<div class="flex justify-center gap-2 flex-wrap">
-					{#each modes as mode, i}
-						<button
-							onclick={() => (activeMode = i)}
-							class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer border
-								{activeMode === i
-								? 'bg-[var(--color-accent)] text-black border-transparent'
-								: 'bg-[var(--color-bg-card)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-border-hover)]'}"
-						>
-							{mode.name}
-						</button>
-					{/each}
-				</div>
-				<span class="text-xs font-mono text-[var(--color-text-dim)] hidden sm:inline">&rarr; most capable</span>
+			<div class="flex justify-start gap-2 flex-wrap mt-10 mb-4">
+				{#each modes as mode, i}
+					<button
+						onclick={() => (activeMode = i)}
+						class="px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer border
+							{activeMode === i
+							? 'bg-[var(--color-accent)] text-black border-transparent'
+							: 'bg-[var(--color-bg-card)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-border-hover)]'}"
+					>
+						{mode.name}
+					</button>
+				{/each}
 			</div>
 
 
-			<div class="max-w-4xl mx-auto">
+			<div>
 				<div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] overflow-hidden">
 					<div class="p-6">
-						<p class="text-[var(--color-text-muted)] mb-6 min-h-[4.5rem]">{modes[activeMode].desc}</p>
-						<!-- Mobile: vertical step-list -->
-						<div class="md:hidden bg-[var(--color-bg-code)] rounded-lg p-5">
+						<p class="text-[var(--color-text-muted)] mb-6">{modes[activeMode].desc}</p>
+						<!-- Mobile / tablet: vertical step-list -->
+						<div class="lg:hidden bg-[var(--color-bg-code)] rounded-lg p-5">
 							<ol class="space-y-3">
 								{#each modes[activeMode].steps as step, i}
 									{#if step.note}
@@ -613,7 +609,7 @@ ${participants}
 						</div>
 
 						<!-- Desktop: Mermaid sequence diagram -->
-						<div class="hidden md:block bg-[var(--color-bg-code)] rounded-lg p-5 min-h-[470px] overflow-x-auto md:overflow-hidden">
+						<div class="hidden lg:block bg-[var(--color-bg-code)] rounded-lg p-5 min-h-[470px] overflow-x-auto lg:overflow-hidden">
 							{#each modes as mode, i}
 								<div class="w-full {i === activeMode ? '' : 'hidden'}">
 									<Mermaid chart={mode.diagram} />
@@ -633,12 +629,12 @@ ${participants}
 					</div>
 				</div>
 			</div>
-			<div class="mt-4 flex justify-center">
+			<div class="mt-4 flex justify-start">
 				<ul class="text-xs text-left text-[var(--color-text-dim)] space-y-1 font-mono list-none">
 					<li><span class="text-[var(--color-text-muted)]">agent_token</span> establishes the agent's identity</li>
 					<li><span class="text-[var(--color-text-muted)]">resource_token</span> describes the access needed</li>
 					<li><span class="text-[var(--color-text-muted)]">auth_token</span> grants an agent access to a resource</li>
-					<li><span class="text-[var(--color-text-muted)]">jwks_uri</span> Person Server (PS)'s JWKS endpoint, discovered via well-known metadata</li>
+					<li><span class="text-[var(--color-text-muted)]">jwks_uri</span> Person Server's JWKS endpoint, discovered via well-known metadata</li>
 				</ul>
 			</div>
 		</InView>
@@ -646,8 +642,8 @@ ${participants}
 </section>
 
 <!-- The 202 Pattern (commented out — redundant with Resource-Managed diagram)
-<section class="py-14 md:py-24 px-6">
-	<div class="max-w-4xl mx-auto">
+<section class="py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-4xl mx-auto px-5 md:px-8">
 		<InView>
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">On the Wire</h2>
 			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-12 text-lg">
@@ -666,19 +662,19 @@ ${participants}
 
 
 <!-- Get Started -->
-<section id="get-started" class="scroll-mt-24 py-14 md:py-24 px-6">
-	<div class="max-w-6xl mx-auto">
+<section id="get-started" class="scroll-mt-24 py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-7xl mx-auto px-5 md:px-8">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Explore AAuth</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-3 text-lg">
+			<h2 class="text-3xl md:text-4xl font-bold mb-4 uppercase">Explore AAuth</h2>
+			<p class="text-[var(--color-text-muted)] mb-3 text-lg">
 				Try the protocol, explore the SDKs, and follow the conversation.
 			</p>
-			<p class="text-center text-lg text-[var(--color-text-dim)] italic max-w-3xl mx-auto mb-12">
+			<p class="text-lg text-[var(--color-text-dim)] italic mb-12">
 				The demos and Playground run against the Hellō Beta Person Server — data is reset regularly, so don't store anything you need to keep.
 			</p>
 		</InView>
 
-		<div class="grid grid-cols-1 gap-4 max-w-4xl mx-auto mb-9">
+		<div class="grid grid-cols-1 gap-4 mb-9">
 			{#each demos as demo, i}
 				<InView class="h-full">
 					<div class="h-full p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] flex flex-col">
@@ -713,7 +709,7 @@ ${participants}
 		</div>
 
 		<div
-			class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
+			class="grid grid-cols-1 sm:grid-cols-3 gap-4"
 			onmousemove={(e) => {
 				const cards = e.currentTarget.querySelectorAll('.glow-card');
 				cards.forEach((card) => {
@@ -778,7 +774,7 @@ ${participants}
 
 		<InView>
 			<div
-				class="space-y-3 max-w-4xl mx-auto mt-9"
+				class="space-y-3 mt-9"
 				onmousemove={(e) => {
 					const cards = e.currentTarget.querySelectorAll('.glow-card');
 					cards.forEach((card) => {
@@ -829,16 +825,16 @@ ${participants}
 
 
 <!-- Community -->
-<section id="community" class="scroll-mt-24 py-14 md:py-24 px-6">
-	<div class="max-w-4xl mx-auto">
+<section id="community" class="scroll-mt-24 py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-7xl mx-auto px-5 md:px-8">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Community</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-2xl mx-auto mb-10 text-lg">
+			<h2 class="text-3xl md:text-4xl font-bold mb-4 uppercase">Community</h2>
+			<p class="text-[var(--color-text-muted)] mb-10 text-lg">
 				Join the discussion on Slack.
 			</p>
 		</InView>
 		<div
-			class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto"
+			class="grid grid-cols-1 sm:grid-cols-2 gap-4"
 			onmousemove={(e) => {
 				const cards = e.currentTarget.querySelectorAll('.glow-card');
 				cards.forEach((card) => {
@@ -878,11 +874,11 @@ ${participants}
 
 
 <!-- Office Hours -->
-<section id="office-hours" class="py-14 md:py-24 px-6">
-	<div class="max-w-4xl mx-auto">
+<section id="office-hours" class="py-[1.82rem] md:py-[3.12rem]">
+	<div class="max-w-7xl mx-auto px-5 md:px-8">
 		<InView>
-			<h2 class="text-3xl md:text-4xl font-bold text-center mb-4 uppercase">Office Hours</h2>
-			<p class="text-center text-[var(--color-text-muted)] max-w-3xl mx-auto mb-10 text-lg">
+			<h2 class="text-3xl md:text-4xl font-bold mb-4 uppercase">Office Hours</h2>
+			<p class="text-[var(--color-text-muted)] mb-10 text-lg">
 				Drop in to ask questions, share what you're building, or listen along.<br class="hidden md:inline"/> Sign up below or at <a
 					href="https://lu.ma/aauth"
 					target="_blank"
@@ -893,7 +889,7 @@ ${participants}
 			</p>
 		</InView>
 		<InView>
-			<div class="max-w-[600px] mx-auto rounded-xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-bg-card)]">
+			<div class="rounded-xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-bg-card)]">
 				<iframe
 					src={`https://luma.com/embed/calendar/cal-nXUxsqTY2ZQgy3b/events?lt=${lumaTheme}`}
 					width="600"
@@ -908,8 +904,8 @@ ${participants}
 </section>
 
 <!-- Footer -->
-<footer class="py-16 px-6 border-t border-[var(--color-border)]">
-	<div class="max-w-6xl mx-auto">
+<footer class="py-16 border-t border-[var(--color-border)]">
+	<div class="max-w-7xl mx-auto px-5 md:px-8">
 		<div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
 			<div>
 				<span class="font-display font-bold text-lg">AAuth</span>
