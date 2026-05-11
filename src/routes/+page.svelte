@@ -1,7 +1,6 @@
 <script>
 	import Nav from '$lib/components/Nav.svelte';
 	import InView from '$lib/components/InView.svelte';
-	import Mermaid from '$lib/components/Mermaid.svelte';
 	import JointSequence, { computeHeight } from '$lib/components/JointSequence.svelte';
 
 	const participantsList = ['Agent', 'Resource', 'Person Server', 'Access Server'];
@@ -123,20 +122,11 @@
 		return () => mql.removeEventListener('change', update);
 	});
 
-	const participants = `    participant A as Agent
-    participant R as Resource
-    participant P as Person Server
-    participant S as Access Server`;
-
 	const modes = [
 		{
 			name: 'Identity Based',
 			parties: 'Agent + Resource',
 			desc: 'Resource authorizes off the agent identifier alone — no authorization flow, no tokens beyond the agent token.',
-			diagram: `sequenceDiagram
-${participants}
-    A->>R: HTTPSig w/ agent_token
-    R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token'] },
 				{ from: 'Resource', to: 'Agent', lines: ['200 OK'], dashed: true }
@@ -146,15 +136,6 @@ ${participants}
 			name: 'Resource Managed',
 			parties: 'Agent + Resource',
 			desc: 'Resource handles authorization itself — via user interaction, consent, or an existing OAuth / OIDC provider.',
-			diagram: `sequenceDiagram
-${participants}
-    A->>R: HTTPSig w/ agent_token
-    R-->>A: 202\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>(interaction required)
-    Note over A,R: user completes interaction
-    A->>R: GET pending URL
-    R-->>A: 200 OK\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>AAuth-Access: opaque-token\u00A0\u200D
-    A->>R: HTTPSig w/ agent_token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>Authorization: AAuth opaque-token\u00A0\u200D
-    R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token'] },
 				{ from: 'Resource', to: 'Agent', lines: ['202 (interaction required)'], dashed: true },
@@ -169,14 +150,6 @@ ${participants}
 			name: 'Person Server Managed',
 			parties: 'Agent + Resource + Person Server',
 			desc: "Person Server handles authorization for the user — issuing the auth token after consent.",
-			diagram: `sequenceDiagram
-${participants}
-    A->>R: HTTPSig w/ agent_token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token           <br/>(aud = Person Server URL)‍
-    A->>P: HTTPSig w/ agent_token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    P-->>A: auth_token
-    A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
-    R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
 				{ from: 'Resource', to: 'Agent', lines: ['resource_token', '(aud = Person Server URL)'], dashed: true },
@@ -190,16 +163,6 @@ ${participants}
 			name: 'Federated',
 			parties: 'Agent + Resource + Person Server + Access Server',
 			desc: "Access Server handles authorization for the resource — federating with the agent's Person Server across trust domains.",
-			diagram: `sequenceDiagram
-${participants}
-    A->>R: HTTPSig w/ agent_token<br/>POST /authorize\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    R-->>A: resource_token           <br/>(aud = Access Server URL)‍
-    A->>P: HTTPSig w/ agent_token<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u00A0\u00A0\u00A0\u200D
-    P->>S: HTTPSig w/ jwks_uri<br/>POST /token\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0<br/>w/ resource_token\u00A0\u00A0\u200D
-    S-->>P: auth_token
-    P-->>A: auth_token
-    A->>R: HTTPSig w/ auth_token<br/>GET /api/documents\u00A0\u00A0\u00A0\u200D
-    R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
 				{ from: 'Resource', to: 'Agent', lines: ['resource_token', '(aud = Access Server URL)'], dashed: true },
@@ -612,7 +575,7 @@ ${participants}
 							</ol>
 						</div>
 
-						<!-- Desktop: JointJS sequence diagram (spike for all modes) -->
+						<!-- Desktop: JointJS sequence diagram -->
 						<div class="hidden lg:block bg-[var(--color-bg-code)] rounded-lg p-5 min-h-[470px] overflow-x-auto lg:overflow-hidden">
 							{#each modes as mode, i}
 								<div class="w-full {i === activeMode ? '' : 'hidden'}">
