@@ -2,6 +2,9 @@
 	import Nav from '$lib/components/Nav.svelte';
 	import InView from '$lib/components/InView.svelte';
 	import Mermaid from '$lib/components/Mermaid.svelte';
+	import JointSequence, { computeHeight } from '$lib/components/JointSequence.svelte';
+
+	const participantsList = ['Agent', 'Resource', 'Person Server', 'Access Server'];
 	import DecryptText from '$lib/components/DecryptText.svelte';
 
 	let bgVideo;
@@ -176,7 +179,7 @@ ${participants}
     R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Person Server URL)'], dashed: true },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token', '(aud = Person Server URL)'], dashed: true },
 				{ from: 'Agent', to: 'Person Server', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
 				{ from: 'Person Server', to: 'Agent', lines: ['auth_token'], dashed: true },
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ auth token', 'GET /api/documents'] },
@@ -199,7 +202,7 @@ ${participants}
     R-->>A: 200 OK`,
 			steps: [
 				{ from: 'Agent', to: 'Resource', lines: ['HTTPSig w/ agent_token', 'POST /authorize'] },
-				{ from: 'Resource', to: 'Agent', lines: ['resource_token (aud = Access Server URL)'], dashed: true },
+				{ from: 'Resource', to: 'Agent', lines: ['resource_token', '(aud = Access Server URL)'], dashed: true },
 				{ from: 'Agent', to: 'Person Server', lines: ['HTTPSig w/ agent_token', 'POST /token w/ resource_token'] },
 				{ from: 'Person Server', to: 'Access Server', lines: ['HTTPSig w/ jwks_uri', 'POST /token w/ resource_token'] },
 				{ from: 'Access Server', to: 'Person Server', lines: ['auth_token'], dashed: true },
@@ -211,6 +214,7 @@ ${participants}
 	];
 
 	let activeMode = $state(0);
+	const maxDiagramHeight = Math.max(...modes.map((m) => computeHeight(m.steps)));
 
 	const specs = [
 		{
@@ -608,11 +612,11 @@ ${participants}
 							</ol>
 						</div>
 
-						<!-- Desktop: Mermaid sequence diagram -->
+						<!-- Desktop: JointJS sequence diagram (spike for all modes) -->
 						<div class="hidden lg:block bg-[var(--color-bg-code)] rounded-lg p-5 min-h-[470px] overflow-x-auto lg:overflow-hidden">
 							{#each modes as mode, i}
 								<div class="w-full {i === activeMode ? '' : 'hidden'}">
-									<Mermaid chart={mode.diagram} />
+									<JointSequence participants={participantsList} steps={mode.steps} minHeight={maxDiagramHeight} />
 								</div>
 							{/each}
 						</div>

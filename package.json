@@ -23,6 +23,7 @@
     "vite": "^6"
   },
   "dependencies": {
+    "@joint/core": "^4.2.4",
     "mermaid": "^11.14.0"
   }
 }
