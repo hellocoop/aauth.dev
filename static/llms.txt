@@ -23,6 +23,7 @@ AAuth supports four resource access modes (identity-based, resource-managed, PS-
 
 Building blocks for AAuth agents and MCP servers, published under the `@aauth` org on npm (current version 0.8.1):
 
+- [@aauth/bootstrap](https://www.npmjs.com/package/@aauth/bootstrap): CLI for bootstrapping AAuth agent keys and configuration
 - [@aauth/fetch](https://www.npmjs.com/package/@aauth/fetch): CLI for making AAuth-authenticated HTTP requests
 - [@aauth/mcp-agent](https://www.npmjs.com/package/@aauth/mcp-agent): Authenticated MCP transport with HTTP Signatures for AAuth agents
 - [@aauth/mcp-server](https://www.npmjs.com/package/@aauth/mcp-server): AAuth server-side building blocks — challenge headers, interaction management, resource tokens
