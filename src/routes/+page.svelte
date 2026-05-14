@@ -266,11 +266,11 @@
 			date: '2026-04-15'
 		},
 		{
-			title: 'AAuth Full Demo',
+			title: 'Exploring AAuth for Agent Identity and Access Management',
 			author: 'Christian Posta',
-			desc: 'Working demo with Keycloak, Agentgateway, Java/Python/Rust',
+			desc: 'Overview of an open-source AAuth demo with identity-based and three-party access modes',
 			href: 'https://blog.christianposta.com/aauth-full-demo/',
-			date: '2026-03-31'
+			date: '2026-05-14'
 		},
 		{
 			title: 'Open-World OAuth Still Needs Mission Shaping',
